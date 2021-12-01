@@ -35,7 +35,6 @@ def market_selection(update, context: CallbackContext):
     update.effective_message.delete()
     if "mrkt" == query.data:
         plot_parameters.current_stage = 1
-
         show_markets_list(query)
     elif "mrkt_1" in query.data:
         if query.data == "mrkt_1_back":
@@ -45,22 +44,31 @@ def market_selection(update, context: CallbackContext):
             market = query.data[-3:]
             plot_parameters.market = market
             plot_parameters.current_stage = 2
-
             show_currencies_list(query)
     elif "mrkt_2" in query.data:
-        currency = query.data[-3:]
-        plot_parameters.currency = currency
-        plot_parameters.current_stage = 3
-
-        show_intervals_list(query)
+        if query.data == "mrkt_2_back":
+            plot_parameters.current_stage = 1
+            show_markets_list(query)
+        else:
+            currency = query.data[-3:]
+            plot_parameters.currency = currency
+            plot_parameters.current_stage = 3
+            show_intervals_list(query)
     elif "mrkt_3" in query.data:
-        days_count = query.data[-2:]
-        plot_parameters.date_interval = days_count
-        plot_parameters.current_stage = 4
-
-        show_candles_list(query)
+        if query.data == "mrkt_3_back":
+            plot_parameters.current_stage = 2
+            show_currencies_list(query)
+        else:
+            days_count = query.data[-2:]
+            plot_parameters.date_interval = days_count
+            plot_parameters.current_stage = 4
+            show_candles_list(query)
     elif "mrkt_4" in query.data:
-        print("Вывод всего")
+        if query.data == "mrkt_4_back":
+            plot_parameters.current_stage = 3
+            show_intervals_list(query)
+        else:
+            print("Вывод всего")
 
 
 # ########################### Functions #########################################
