@@ -10,6 +10,8 @@ from telegram.ext import (
 
 # Enable logging
 from src.PlotParams import PlotParams
+from src.binance_connector import BinanceConnector
+from datetime import datetime, timedelta
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -59,7 +61,8 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = 2
             show_currencies_list(query)
         else:
-            days_count = query.data[-2:]
+            days_count = int(query.data[-2:])
+            print(days_count)
             plot_parameters.date_interval = days_count
             plot_parameters.current_stage = 4
             show_candles_list(query)
@@ -68,7 +71,9 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = 3
             show_intervals_list(query)
         else:
-            print("Вывод всего")
+            candle_size = query.data[-2:]
+            plot_parameters.candle_size = candle_size
+            show_results1(query)
 
 
 # ########################### Functions #########################################
@@ -157,19 +162,19 @@ def show_candles_list(query: Any):
 
     candle_buttons_std = InlineKeyboardMarkup([[
         InlineKeyboardButton(
-            "15М", callback_data="mrkt_4_15M"
+            "15М", callback_data="mrkt_4_15m"
         ),
         InlineKeyboardButton(
-            "1Ч", callback_data="mrkt_4_1H"
+            "1Ч", callback_data="mrkt_4_1h"
         ),
         InlineKeyboardButton(
-            "4Ч", callback_data="mrkt_4_4H"
+            "4Ч", callback_data="mrkt_4_4h"
         ),
         InlineKeyboardButton(
-            "12Ч", callback_data="mrkt_4_12H"
+            "12Ч", callback_data="mrkt_4_12h"
         ),
         InlineKeyboardButton(
-            "1Д", callback_data="mrkt_4_1D"
+            "1Д", callback_data="mrkt_4_1d"
         ),
         InlineKeyboardButton(
             "Назад", callback_data="mrkt_4_back"
@@ -197,6 +202,76 @@ def show_candles_list(query: Any):
     query.message.reply_text(reply_markup=buttons, text=message)
 
 
+def show_results(query: Any):
+    symbols = plot_parameters.market + plot_parameters.currency
+    kline = plot_parameters.candle_size
+    to_date = datetime.now()
+    from_date = to_date - timedelta(days=plot_parameters.date_interval)
+    data = bc.get_data(symbols, kline, str(from_date))
+    data_prepared = data['median'].to_numpy()
+    length = data['Open time'].tolist()
+    bc.plot(length, data_prepared)
+
+    message = "Глобальный минимум: 123\n" \
+              "Глобальный максимум: 123\n" \
+              "Цена: 123\n" \
+              "Соотношение: 123\n"
+
+    buttons = InlineKeyboardMarkup([[
+        InlineKeyboardButton(
+            "Глобальный минимум: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Глобальный максимум: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Цена: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Соотношение: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "На главную", callback_data="mrkt_4_back"
+        )]])
+    query.message.reply_photo(reply_markup=buttons, photo="/figures/test_fig.png")
+    # query.message.reply_text(reply_markup=buttons, text=message)
+
+
+def show_results1(query: Any):
+    symbols = "BNB" + "BTC"
+    kline = "15m"
+    to_date = datetime.now()
+    from_date = to_date - timedelta(days=int("07"))
+    data = bc.get_data(symbols, kline, str(from_date))
+    data_prepared = data['median'].to_numpy()
+    length = data['Open time'].tolist()
+    bc.plot(length, data_prepared)
+
+    message = "Глобальный минимум: 123\n" \
+              "Глобальный максимум: 123\n" \
+              "Цена: 123\n" \
+              "Соотношение: 123\n"
+
+    buttons = InlineKeyboardMarkup([[
+        InlineKeyboardButton(
+            "Глобальный минимум: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Глобальный максимум: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Цена: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "Соотношение: 123", callback_data="mrkt_4_back"
+        ),
+        InlineKeyboardButton(
+            "На главную", callback_data="mrkt_4_back"
+        )]])
+    query.message.reply_photo(reply_markup=buttons, photo="/figures/test_fig.png")
+    # query.message.reply_text(reply_markup=buttons, text=message)
+
+
 # ########################### Main #########################################
 def main():
 
@@ -220,4 +295,5 @@ def main():
 
 
 if __name__ == "__main__":
+    bc = BinanceConnector()
     main()
