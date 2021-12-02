@@ -2,6 +2,7 @@ from config import config as conf
 from binance import Client
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class BinanceConnector:
@@ -74,3 +75,13 @@ class BinanceConnector:
         # Parameters:	symbol (str) – name of the symbol pair
         # symbol='BTCUSDT'
         return self.client.get_margin_price_index(symbol=pair)
+
+    def plot(self, time, data):
+        # Parameters:
+        #   time (list of timestamps) - X axis
+        #   data (list of values) - Y data
+        plt.subplot(1, 1, 1)
+        plt.plot(time, data)
+        plt.gcf().autofmt_xdate()
+        plt.savefig('../figures/test_fig.png')
+        plt.show()
