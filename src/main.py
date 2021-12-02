@@ -268,7 +268,7 @@ def show_results1(query: Any):
         InlineKeyboardButton(
             "На главную", callback_data="mrkt_4_back"
         )]])
-    query.message.reply_photo(reply_markup=buttons, photo="/figures/test_fig.png")
+    query.message.reply_photo(reply_markup=buttons, photo=open("../figures/test_fig.png", 'rb'))
     # query.message.reply_text(reply_markup=buttons, text=message)
 
 
