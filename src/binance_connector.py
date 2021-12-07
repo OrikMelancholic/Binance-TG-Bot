@@ -1,8 +1,10 @@
+import matplotlib
 from config import config as conf
 from binance import Client
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+matplotlib.use('agg')
 
 
 class BinanceConnector:

@@ -10,6 +10,7 @@ from telegram.ext import (
 
 # Enable logging
 from src.PlotParams import PlotParams
+from config import config as configs
 from src.binance_connector import BinanceConnector
 from datetime import datetime, timedelta
 
@@ -71,9 +72,9 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = 3
             show_intervals_list(query)
         else:
-            candle_size = query.data[-2:]
+            candle_size = query.data.replace('mrkt_4_', '')
             plot_parameters.candle_size = candle_size
-            show_results1(query)
+            show_results(query)
 
 
 # ########################### Functions #########################################
@@ -135,66 +136,108 @@ def show_currencies_list(query: Any):
 def show_intervals_list(query: Any):
     message = "Выберите интервал для графика:"
 
-    interval_buttons = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "День", callback_data="mrkt_3_01"
-        ),
-        InlineKeyboardButton(
-            "3 дня", callback_data="mrkt_3_03"
-        ),
-        InlineKeyboardButton(
-            "Неделя", callback_data="mrkt_3_07"
-        ),
-        InlineKeyboardButton(
-            "Месяц", callback_data="mrkt_3_30"
-        ),
-        InlineKeyboardButton(
-            "Три месяца", callback_data="mrkt_3_90"
-        ),
-        InlineKeyboardButton(
-            "Назад", callback_data="mrkt_3_back"
-        )]])
+    interval_buttons = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "День", callback_data="mrkt_3_01"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "3 дня", callback_data="mrkt_3_03"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Неделя", callback_data="mrkt_3_07"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Месяц", callback_data="mrkt_3_30"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Три месяца", callback_data="mrkt_3_90"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Назад", callback_data="mrkt_3_back"
+                )
+            ]
+        ]
+    )
+
     query.message.reply_text(reply_markup=interval_buttons, text=message)
 
 
 def show_candles_list(query: Any):
     message = "Выберите ширину свечи для графика:"
 
-    candle_buttons_std = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "15М", callback_data="mrkt_4_15m"
-        ),
-        InlineKeyboardButton(
-            "1Ч", callback_data="mrkt_4_1h"
-        ),
-        InlineKeyboardButton(
-            "4Ч", callback_data="mrkt_4_4h"
-        ),
-        InlineKeyboardButton(
-            "12Ч", callback_data="mrkt_4_12h"
-        ),
-        InlineKeyboardButton(
-            "1Д", callback_data="mrkt_4_1d"
-        ),
-        InlineKeyboardButton(
-            "Назад", callback_data="mrkt_4_back"
-        )]])
+    candle_buttons_std = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "15 Минут", callback_data="mrkt_4_15m"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 Час", callback_data="mrkt_4_1h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "4 Часа", callback_data="mrkt_4_4h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "12 Часов", callback_data="mrkt_4_12h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 День", callback_data="mrkt_4_1d"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Назад", callback_data="mrkt_4_back"
+                )
+            ]
+        ]
+    )
 
-    candle_buttons_sml = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "15М", callback_data="mrkt_4_15M"
-        ),
-        InlineKeyboardButton(
-            "1Ч", callback_data="mrkt_4_1H"
-        ),
-        InlineKeyboardButton(
-            "4Ч", callback_data="mrkt_4_4H"
-        ),
-        InlineKeyboardButton(
-            "Назад", callback_data="mrkt_4_back"
-        )]])
+    candle_buttons_sml = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "15 Минут", callback_data="mrkt_4_15m"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 Час", callback_data="mrkt_4_1h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "4 Часа", callback_data="mrkt_4_4h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Назад", callback_data="mrkt_4_back"
+                )
+            ]
+        ]
+    )
 
-    if plot_parameters.date_interval == "01":
+    if plot_parameters.date_interval == 1:
         buttons = candle_buttons_sml
     else:
         buttons = candle_buttons_std
@@ -212,71 +255,51 @@ def show_results(query: Any):
     length = data['Open time'].tolist()
     bc.plot(length, data_prepared)
 
-    message = "Глобальный минимум: 123\n" \
-              "Глобальный максимум: 123\n" \
-              "Цена: 123\n" \
-              "Соотношение: 123\n"
+    buttons = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "Глобальный минимум: 123", callback_data="mrkt_4_back"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Глобальный максимум: 123", callback_data="mrkt_4_back"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Цена: 123", callback_data="mrkt_4_back"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Соотношение: 123", callback_data="mrkt_4_back"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "На главную", callback_data="mrkt_4_back"
+                )
+            ]
+        ]
+    )
 
-    buttons = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "Глобальный минимум: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Глобальный максимум: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Цена: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Соотношение: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "На главную", callback_data="mrkt_4_back"
-        )]])
-    query.message.reply_photo(reply_markup=buttons, photo="/figures/test_fig.png")
-    # query.message.reply_text(reply_markup=buttons, text=message)
-
-
-def show_results1(query: Any):
-    symbols = "BNB" + "BTC"
-    kline = "15m"
-    to_date = datetime.now()
-    from_date = to_date - timedelta(days=int("07"))
-    data = bc.get_data(symbols, kline, str(from_date))
-    data_prepared = data['median'].to_numpy()
-    length = data['Open time'].tolist()
-    bc.plot(length, data_prepared)
-
-    message = "Глобальный минимум: 123\n" \
-              "Глобальный максимум: 123\n" \
-              "Цена: 123\n" \
-              "Соотношение: 123\n"
-
-    buttons = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "Глобальный минимум: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Глобальный максимум: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Цена: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "Соотношение: 123", callback_data="mrkt_4_back"
-        ),
-        InlineKeyboardButton(
-            "На главную", callback_data="mrkt_4_back"
-        )]])
-    query.message.reply_photo(reply_markup=buttons, photo=open("../figures/test_fig.png", 'rb'))
-    # query.message.reply_text(reply_markup=buttons, text=message)
+    query.message.reply_photo(reply_markup=buttons,
+                              photo=open("../figures/test_fig.png", 'rb'),
+                              parse_mode="markdown",
+                              caption=f"График изменения цены по следующим параметрам:\n"
+                                      f"Рынок {plot_parameters.market}\n"
+                                      f"Валюта {plot_parameters.currency}\n"
+                                      f"Интервал {plot_parameters.date_interval}\n"
+                                      f"Размер свечи {plot_parameters.candle_size}\n")
 
 
 # ########################### Main #########################################
 def main():
-
     # Create the Updater and pass it your bot's token.
-    updater = Updater("2133047644:AAHutBsvIFOcIJv9rqDJWNxgKxIKDUHhlkg")
+    token = configs.telebot_token
+    updater = Updater(token)
 
     dispatcher = updater.dispatcher
 
