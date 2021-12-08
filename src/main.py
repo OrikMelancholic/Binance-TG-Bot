@@ -107,7 +107,7 @@ def main_menu(query):
 
 def show_markets_list(query: Any):
     message = "Выберите интересующий Вас рынок:"
-    markets = ["BTC", "BNB", "ETH", "TRX", "XRP"]
+    markets = ["USDT", "BNB", "BTC", "ETH", "AUD"]
     market_buttons = []
 
     for market_name in markets:
@@ -119,9 +119,14 @@ def show_markets_list(query: Any):
         text=message)
 
 
+# BNB -> YFII, PAXG, ILV, KP3R, BCH
+# BTC -> WBTC, RENBTC, YFI, ETH, YFII
+# ETH -> WBTC, BETH, BNB, XMR, AAVE
+# AUD -> BTC, ETH, BNB, KSM, SOUL
+# RUB -> BTC, ETH, BNB, SOUL, LTC
 def show_currencies_list(query: Any):
     message = "Выберите валюту либо введите её код (пока не вводите)"
-    markets = ["BTC", "BNB", "ETH", "TRX", "XRP"]
+    markets = ["BTC", "BNB", "ETH", "TRX", "LUNA"]
     currency_buttons = []
 
     for currency_name in markets:

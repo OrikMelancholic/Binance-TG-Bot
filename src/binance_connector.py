@@ -86,4 +86,4 @@ class BinanceConnector:
         plt.plot(time, data)
         plt.gcf().autofmt_xdate()
         plt.savefig('../figures/test_fig.png')
-        plt.show()
+        # plt.show()
