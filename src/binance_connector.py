@@ -4,7 +4,7 @@ from binance import Client
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
-matplotlib.use('agg')
+# matplotlib.use('agg')
 
 
 class BinanceConnector:
@@ -86,4 +86,4 @@ class BinanceConnector:
         plt.plot(time, data)
         plt.gcf().autofmt_xdate()
         plt.savefig('../figures/test_fig.png')
-        # plt.show()
+        plt.close()
