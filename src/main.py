@@ -9,6 +9,7 @@ from telegram.ext import (
 )
 
 # Enable logging
+from config import markets as markets_list
 from src.PlotParams import PlotParams
 from config import config as configs
 from src.binance_connector import BinanceConnector
@@ -107,7 +108,7 @@ def main_menu(query):
 
 def show_markets_list(query: Any):
     message = "Выберите интересующий Вас рынок:"
-    markets = ["USDT", "BNB", "BTC", "ETH", "AUD"]
+    markets = ["BNB", "BTC", "ETH", "AUD", "RUB"]
     market_buttons = []
 
     for market_name in markets:
@@ -119,14 +120,10 @@ def show_markets_list(query: Any):
         text=message)
 
 
-# BNB -> YFII, PAXG, ILV, KP3R, BCH
-# BTC -> WBTC, RENBTC, YFI, ETH, YFII
-# ETH -> WBTC, BETH, BNB, XMR, AAVE
-# AUD -> BTC, ETH, BNB, KSM, SOUL
-# RUB -> BTC, ETH, BNB, SOUL, LTC
 def show_currencies_list(query: Any):
     message = "Выберите валюту либо введите её код (пока не вводите)"
-    markets = ["BTC", "BNB", "ETH", "TRX", "LUNA"]
+    selected_market_code = plot_parameters.market
+    markets = markets_list.get_top_5_in_market(selected_market_code)
     currency_buttons = []
 
     for currency_name in markets:
