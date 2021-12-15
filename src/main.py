@@ -92,8 +92,13 @@ def market_selection(update, context: CallbackContext):
             show_candles_list(query)
     elif "mrkt_4" in query.data:
         if query.data == "mrkt_4_back":
-            plot_parameters.current_stage = 3
-            show_intervals_list(query)
+            plot_parameters.current_stage = -1
+            plot_parameters.market = ""
+            plot_parameters.currency = ""
+            plot_parameters.date_interval = 0
+            plot_parameters.candle_size = ""
+
+            main_menu(query)
         else:
             candle_size = query.data.replace('mrkt_4_', '')
             plot_parameters.candle_size = candle_size
@@ -151,15 +156,15 @@ def show_currencies_list(query: Any):
     message = "Выберите валюту либо введите её код.\nПрим.: BTC"
     selected_market_code = plot_parameters.market
     if selected_market_code == "BNB":
-        markets = ["YFII", "PAXG", "ILV", "KP3R", "BCH"]
+        markets = ["ADA", "CREAM", "FARM", "IQ", "SAND"]
     elif selected_market_code == "BTC":
-        markets = ["WBTC", "RENBTC", "YFI", "ETH", "YFII"]
+        markets = ["DUSK", "DASH", "ATM", "1INCH", "POLY"]
     elif selected_market_code == "ETH":
-        markets = ["BTC", "ETH", "BNB", "KSM", "SOUL"]
+        markets = ["BNB", "ETC", "HOT", "MFT", "NANO"]
     elif selected_market_code == "AUD":
-        markets = ["BTC", "ETH", "BNB", "KSM", "SOUL"]
+        markets = ["BNB", "BTC", "ETH", "XRP", "LUNA"]
     elif selected_market_code == "RUB":
-        markets = ["BTC", "ETH", "BNB", "SOUL", "LTC"]
+        markets = ["BNB", "BTC", "DOGE", "ETH", "USDT"]
     currency_buttons = []
 
     for currency_name in markets:
@@ -296,27 +301,27 @@ def show_results(query: Any):
         [
             [
                 InlineKeyboardButton(
-                    "Глобальный минимум: 123", callback_data="mrkt_4_back"
+                    f"Глобальный минимум: {bc.get_min(data_prepared)}", callback_data="mrkt_4_back"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    "Глобальный максимум: 123", callback_data="mrkt_4_back"
+                    f"Глобальный максимум: {bc.get_max(data_prepared)}", callback_data="mrkt_4_back"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    "Цена: 123", callback_data="mrkt_4_back"
+                    f"Соотношение: {bc.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_4_back"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    "Соотношение: 123", callback_data="mrkt_4_back"
+                    f"Цена: {bc.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_4_back"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    "На главную", callback_data="mrkt_4_back"
+                    "Главное меню", callback_data="mrkt_4_back"
                 )
             ]
         ]
@@ -326,10 +331,8 @@ def show_results(query: Any):
                               photo=open("../figures/test_fig.png", 'rb'),
                               parse_mode="markdown",
                               caption=f"График изменения цены по следующим параметрам:\n"
-                                      f"Рынок {plot_parameters.market}\n"
-                                      f"Валюта {plot_parameters.currency}\n"
-                                      f"Интервал {plot_parameters.date_interval}\n"
-                                      f"Размер свечи {plot_parameters.candle_size}\n")
+                                      f"{plot_parameters.currency}/{plot_parameters.market}"
+                              )
 
 
 # ########################### Main #########################################

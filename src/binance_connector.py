@@ -87,3 +87,17 @@ class BinanceConnector:
         plt.gcf().autofmt_xdate()
         plt.savefig('../figures/test_fig.png')
         plt.close()
+
+    def get_min(self, data):
+        return min(data)
+
+    def get_max(self, data):
+        return max(data)
+
+    def get_current_pair_ratio(self, data):
+        return data[-1]
+
+    def get_current_price(self, value_name): # in USD
+        symbol = value_name + 'USDT'
+        response = self.client.get_margin_price_index(symbol=symbol)
+        return float(response['price'])
