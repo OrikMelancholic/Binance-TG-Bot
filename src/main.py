@@ -286,8 +286,7 @@ def show_candles_list(query: Any):
 def show_results(query: Any):
     symbols = plot_parameters.currency + plot_parameters.market
     kline = plot_parameters.candle_size
-    to_date = datetime.now()
-    from_date = to_date - timedelta(days=plot_parameters.date_interval)
+    from_date = datetime.now() - timedelta(days=plot_parameters.date_interval)
     data = bc.get_data(symbols, kline, str(from_date))
     data_prepared = data['median'].to_numpy()
     length = data['Open time'].tolist()
