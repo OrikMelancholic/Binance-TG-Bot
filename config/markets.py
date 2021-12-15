@@ -571,11 +571,23 @@ rub_market = ['ADA',
               'NEO']
 
 
-def check_coin_in_market(coin, market):
-    if not coin.to_lower() in market.to_lower():
-        return 0
-    else:
+def check_coin_in_market(currency, market):
+    mrkt_list = []
+    if market == "RUB":
+        mrkt_list = rub_market
+    elif market == "BNB":
+        mrkt_list = bnb_market
+    elif market == "BTC":
+        mrkt_list = btc_market
+    elif market == "AUD":
+        mrkt_list = aud_market
+    elif market == "ETH":
+        mrkt_list = eth_market
+
+    if currency in mrkt_list:
         return 1
+    else:
+        return 0
 
 
 def get_top_5_in_market(market_code):

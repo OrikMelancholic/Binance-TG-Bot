@@ -5,7 +5,7 @@ from telegram.ext import (
     Updater,
     CommandHandler,
     CallbackContext,
-    CallbackQueryHandler,
+    CallbackQueryHandler, Filters, MessageHandler,
 )
 
 # Enable logging
@@ -25,6 +25,29 @@ plot_parameters = PlotParams()
 
 
 # ########################### Selection #########################################
+def handle_text(update, context: CallbackContext):
+    chat_id = update.message.chat_id
+
+    if plot_parameters.current_stage == 2:
+        currency_code = update.message.text
+        selected_market = plot_parameters.market
+
+        if markets_list.check_coin_in_market(currency_code, selected_market) == 0:
+            update.effective_message.delete()
+            context.bot.sendMessage(chat_id=chat_id, text="Такой валюты на выбранном рынке не существует."
+                                                          "\nПопробуйте заново.")
+        else:
+            query = update.callback_query
+
+            currency = currency_code
+            plot_parameters.currency = currency
+            plot_parameters.current_stage = 3
+            show_intervals_list(query)
+    else:
+        print("Не валюта", update.message.text)
+        update.effective_message.delete()
+
+
 def favorites_selection(update, _: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
@@ -45,7 +68,7 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = -1
             main_menu(query)
         else:
-            market = query.data[-3:]
+            market = query.data.replace('mrkt_1_', '')
             plot_parameters.market = market
             plot_parameters.current_stage = 2
             show_currencies_list(query)
@@ -54,7 +77,7 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = 1
             show_markets_list(query)
         else:
-            currency = query.data[-3:]
+            currency = query.data.replace('mrkt_2_', '')
             plot_parameters.currency = currency
             plot_parameters.current_stage = 3
             show_intervals_list(query)
@@ -63,8 +86,7 @@ def market_selection(update, context: CallbackContext):
             plot_parameters.current_stage = 2
             show_currencies_list(query)
         else:
-            days_count = int(query.data[-2:])
-            print(days_count)
+            days_count = int(query.data.replace('mrkt_3_', ''))
             plot_parameters.date_interval = days_count
             plot_parameters.current_stage = 4
             show_candles_list(query)
@@ -75,6 +97,11 @@ def market_selection(update, context: CallbackContext):
         else:
             candle_size = query.data.replace('mrkt_4_', '')
             plot_parameters.candle_size = candle_size
+
+            print(plot_parameters.market)
+            print(plot_parameters.currency)
+            print(plot_parameters.date_interval)
+            print(plot_parameters.candle_size)
             show_results(query)
 
 
@@ -121,7 +148,7 @@ def show_markets_list(query: Any):
 
 
 def show_currencies_list(query: Any):
-    message = "Выберите валюту либо введите её код (пока не вводите)"
+    message = "Выберите валюту либо введите её код.\nПрим.: BTC"
     selected_market_code = plot_parameters.market
     markets = markets_list.get_top_5_in_market(selected_market_code)
     currency_buttons = []
@@ -248,7 +275,7 @@ def show_candles_list(query: Any):
 
 
 def show_results(query: Any):
-    symbols = plot_parameters.market + plot_parameters.currency
+    symbols = plot_parameters.currency + plot_parameters.market
     kline = plot_parameters.candle_size
     to_date = datetime.now()
     from_date = to_date - timedelta(days=plot_parameters.date_interval)
@@ -313,6 +340,9 @@ def main():
     )
     updater.dispatcher.add_handler(
         CallbackQueryHandler(favorites_selection, pattern="fvrt")
+    )
+    updater.dispatcher.add_handler(
+        MessageHandler(Filters.text, handle_text)
     )
 
     updater.start_polling()
