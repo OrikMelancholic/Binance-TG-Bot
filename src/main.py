@@ -150,7 +150,16 @@ def show_markets_list(query: Any):
 def show_currencies_list(query: Any):
     message = "Выберите валюту либо введите её код.\nПрим.: BTC"
     selected_market_code = plot_parameters.market
-    markets = markets_list.get_top_5_in_market(selected_market_code)
+    if selected_market_code == "BNB":
+        markets = ["YFII", "PAXG", "ILV", "KP3R", "BCH"]
+    elif selected_market_code == "BTC":
+        markets = ["WBTC", "RENBTC", "YFI", "ETH", "YFII"]
+    elif selected_market_code == "ETH":
+        markets = ["BTC", "ETH", "BNB", "KSM", "SOUL"]
+    elif selected_market_code == "AUD":
+        markets = ["BTC", "ETH", "BNB", "KSM", "SOUL"]
+    elif selected_market_code == "RUB":
+        markets = ["BTC", "ETH", "BNB", "SOUL", "LTC"]
     currency_buttons = []
 
     for currency_name in markets:
