@@ -3,6 +3,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.src.plot_params import PlotParams
 from bot.config import config as configs
+from bot.config import markets as markets_list
+
 from bot.src.binance_connector import BinanceConnector
 from datetime import datetime, timedelta
 
@@ -247,6 +249,27 @@ def show_candles_list():
                                    text=message,
                                    reply_markup=buttons)
     last_bot_message_id = bot_message.message_id
+
+
+@bot.message_handler(content_types=['text'])
+def handle_text(message):
+    global last_bot_message_id
+
+    if plot_parameters.current_stage == 2:
+        currency_code = message.text
+        selected_market = plot_parameters.market
+
+        if markets_list.check_coin_in_market(currency_code, selected_market) == 0:
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+        else:
+            plot_parameters.currency = currency_code
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                                  text=f"Выбранная валюта: {currency_code}")
+            show_intervals_list()
+    else:
+        print("Не валюта", message.text)
+        bot.delete_message(chat_id=chat_id, message_id=message.message_id)
 
 
 bot.infinity_polling()
