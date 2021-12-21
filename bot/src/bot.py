@@ -94,7 +94,38 @@ def show_results():
     length = data['Open time'].tolist()
     bc.plot(length, data_prepared)
 
+    buttons = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    f"Глобальный минимум: {bc.get_min(data_prepared)}", callback_data="mrkt_pass"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"Глобальный максимум: {bc.get_max(data_prepared)}", callback_data="mrkt_pass"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"Соотношение: {bc.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_pass"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    f"Цена: {bc.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_pass"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Главное меню", callback_data="mrkt_reset"
+                )
+            ]
+        ]
+    )
+
     bot_message = bot.send_photo(chat_id=chat_id,
+                                 reply_markup=buttons,
                                  photo=open("../figures/test_fig.png", 'rb'),
                                  parse_mode="markdown",
                                  caption=f"График изменения цены по следующим параметрам:\n"
