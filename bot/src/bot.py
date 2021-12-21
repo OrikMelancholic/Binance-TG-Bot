@@ -68,6 +68,12 @@ def market_selection(query):
         bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
                               text=f"Интервал для графика: {days_count} дней")
         plot_parameters.date_interval = days_count
+        show_candles_list()
+    elif "mrkt_4" in query.data:
+        candle_size = query.data.replace('mrkt_4_', '')
+        print(f"candle_size => {candle_size}")
+        bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Ширина свечи: {candle_size}")
+        plot_parameters.candle_size = candle_size
 
 
 def show_markets_list():
@@ -104,9 +110,10 @@ def show_currencies_list():
 
     for currency_name in markets:
         currency_buttons.append([InlineKeyboardButton(currency_name, callback_data=f"mrkt_2_{currency_name}")])
+
     bot_message = bot.send_message(chat_id=chat_id,
-                               text=message,
-                               reply_markup=InlineKeyboardMarkup(currency_buttons))
+                                   text=message,
+                                   reply_markup=InlineKeyboardMarkup(currency_buttons))
     last_bot_message_id = bot_message.message_id
 
 
@@ -141,11 +148,6 @@ def show_intervals_list():
                 InlineKeyboardButton(
                     "Три месяца", callback_data="mrkt_3_90"
                 )
-            ],
-            [
-                InlineKeyboardButton(
-                    "Назад", callback_data="mrkt_3_back"
-                )
             ]
         ]
     )
@@ -153,6 +155,47 @@ def show_intervals_list():
     bot_message = bot.send_message(chat_id=chat_id,
                                    text=message,
                                    reply_markup=interval_buttons)
+    last_bot_message_id = bot_message.message_id
+
+
+def show_candles_list():
+    global last_bot_message_id
+    plot_parameters.current_stage = 4
+    message = "Выберите ширину свечи для графика:"
+
+    buttons = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "15 Минут", callback_data="mrkt_4_15m"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 Час", callback_data="mrkt_4_1h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "4 Часа", callback_data="mrkt_4_4h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "12 Часов", callback_data="mrkt_4_12h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 День", callback_data="mrkt_4_1d"
+                )
+            ]
+        ]
+    )
+
+    bot_message = bot.send_message(chat_id=chat_id,
+                                   text=message,
+                                   reply_markup=buttons)
     last_bot_message_id = bot_message.message_id
 
 
