@@ -61,6 +61,13 @@ def market_selection(query):
         print(f"currency => {currency}")
         bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранная валюта: {currency}")
         plot_parameters.currency = currency
+        show_intervals_list()
+    elif "mrkt_3" in query.data:
+        days_count = int(query.data.replace('mrkt_3_', ''))
+        print(f"days_count => {days_count}")
+        bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                              text=f"Интервал для графика: {days_count} дней")
+        plot_parameters.date_interval = days_count
 
 
 def show_markets_list():
@@ -76,6 +83,7 @@ def show_markets_list():
                                    text=message,
                                    reply_markup=InlineKeyboardMarkup(market_buttons))
     last_bot_message_id = bot_message.message_id
+
 
 def show_currencies_list():
     global last_bot_message_id
@@ -96,11 +104,55 @@ def show_currencies_list():
 
     for currency_name in markets:
         currency_buttons.append([InlineKeyboardButton(currency_name, callback_data=f"mrkt_2_{currency_name}")])
-    currency_buttons.append([InlineKeyboardButton("Назад", callback_data=f"mrkt_2_back")])
+    bot_message = bot.send_message(chat_id=chat_id,
+                               text=message,
+                               reply_markup=InlineKeyboardMarkup(currency_buttons))
+    last_bot_message_id = bot_message.message_id
+
+
+def show_intervals_list():
+    global last_bot_message_id
+    plot_parameters.current_stage = 3
+    message = "Выберите интервал для графика:"
+
+    interval_buttons = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "День", callback_data="mrkt_3_01"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "3 дня", callback_data="mrkt_3_03"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Неделя", callback_data="mrkt_3_07"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Месяц", callback_data="mrkt_3_30"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Три месяца", callback_data="mrkt_3_90"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "Назад", callback_data="mrkt_3_back"
+                )
+            ]
+        ]
+    )
 
     bot_message = bot.send_message(chat_id=chat_id,
                                    text=message,
-                                   reply_markup=InlineKeyboardMarkup(currency_buttons))
+                                   reply_markup=interval_buttons)
     last_bot_message_id = bot_message.message_id
 
 
