@@ -1,7 +1,10 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from config import config as configs
+from bot.src.plot_params import PlotParams
+from bot.config import config as configs
+from bot.src.binance_connector import BinanceConnector
+from datetime import datetime, timedelta
 
 plot_parameters = PlotParams()
 token = configs.telebot_token
@@ -74,6 +77,28 @@ def market_selection(query):
         print(f"candle_size => {candle_size}")
         bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Ширина свечи: {candle_size}")
         plot_parameters.candle_size = candle_size
+        show_results()
+
+
+def show_results():
+    global last_bot_message_id
+
+    bc = BinanceConnector()
+    symbols = plot_parameters.currency + plot_parameters.market
+    kline = plot_parameters.candle_size
+    from_date = datetime.now() - timedelta(days=plot_parameters.date_interval)
+    data = bc.get_data(symbols, kline, str(from_date))
+    data_prepared = data['median'].to_numpy()
+    length = data['Open time'].tolist()
+    bc.plot(length, data_prepared)
+
+    bot_message = bot.send_photo(chat_id=chat_id,
+                                 photo=open("../figures/test_fig.png", 'rb'),
+                                 parse_mode="markdown",
+                                 caption=f"График изменения цены по следующим параметрам:\n"
+                                         f"{plot_parameters.currency}/{plot_parameters.market}"
+                                 )
+    last_bot_message_id = bot_message.message_id
 
 
 def show_markets_list():
