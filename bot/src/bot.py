@@ -1,10 +1,10 @@
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import markets as markets_list
-from src.PlotParams import PlotParams
-from config import config as configs
-from src.binance_connector import BinanceConnector
+from bot.config import markets as markets_list
+from bot.config import config as configs
+from bot.src.plot_params import PlotParams
+from bot.src.binance_connector import BinanceConnector
 from datetime import datetime, timedelta
 
 plot_parameters = PlotParams()
@@ -27,8 +27,8 @@ def start(message):
     menu.add(InlineKeyboardButton(text="Избранное", callback_data="fvrt"))
 
     bot_message = bot.send_message(chat_id=message.chat.id,
-                     text="Добро пожаловать.\nЭтот бот поможет в работе с Binance!",
-                     reply_markup=menu)
+                                   text="Добро пожаловать.\nЭтот бот поможет в работе с Binance!",
+                                   reply_markup=menu)
     last_bot_message_id = bot_message.message_id
 
 
@@ -42,8 +42,8 @@ def main_menu():
     menu.add(InlineKeyboardButton(text="Избранное", callback_data="fvrt"))
 
     bot_message = bot.send_message(chat_id=chat_id,
-                     text="Добро пожаловать.\nЭтот бот поможет в работе с Binance!",
-                     reply_markup=menu)
+                                   text="Добро пожаловать.\nЭтот бот поможет в работе с Binance!",
+                                   reply_markup=menu)
     last_bot_message_id = bot_message.message_id
 
 
@@ -83,7 +83,8 @@ def market_selection(query):
         else:
             days_count = int(query.data.replace('mrkt_3_', ''))
             print(f"days_count => {days_count}")
-            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Интервал для графика: {days_count} дней")
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                                  text=f"Интервал для графика: {days_count} дней")
             plot_parameters.date_interval = days_count
             show_candles_list()
     elif "mrkt_4" in query.data:
@@ -337,7 +338,8 @@ def handle_text(message):
         else:
             plot_parameters.currency = currency_code
             bot.delete_message(chat_id=chat_id, message_id=message.message_id)
-            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранная валюта: {currency_code}")
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                                  text=f"Выбранная валюта: {currency_code}")
             show_intervals_list()
     else:
         print("Не валюта", message.text)
