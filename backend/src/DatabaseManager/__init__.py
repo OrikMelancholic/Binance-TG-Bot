@@ -83,11 +83,11 @@ class DatabaseManager:
         if tid:
             self.logger.log('Selecting user with tid %s' % tid)
             rows = self._select('Users', where='tid=%s' % tid)
-            rows = rows[0]
+            rows = rows[0] if rows else rows
         else:
             self.logger.log('Selecting all users')
             rows = self._select('Users')
-        self.logger.log('Returning %s' % (rows,))
+        self.logger.log('Returning %s' % self.logger.fancy_json(rows))
         return rows
 
     def addUser(self, tid):
@@ -96,16 +96,16 @@ class DatabaseManager:
         row = self.getUser(tid)
         return row
 
-    def getCurrency(self, flair):
+    def getCurrency(self, flair=None):
         rows = None
         if flair:
             self.logger.log('Selecting currency with flair %s' % flair)
             rows = self._select('Currencies', where='flair=\'%s\'' % flair)
-            rows = rows[0]
+            rows = rows[0] if rows else rows
         else:
             self.logger.log('Selecting all currencies')
             rows = self._select('Currencies')
-        self.logger.log('Returning %s' % (rows,))
+        self.logger.log('Returning %s' % self.logger.fancy_json(rows))
         return rows
 
     def addCurrency(self, flair, usdvalue=0):
@@ -134,7 +134,7 @@ class DatabaseManager:
         rows = self._select(table, what, where)
         if tid and flair and rows:
             rows = rows[0]
-        self.logger.log('Returning %s' % (rows,))
+        self.logger.log('Returning %s' % self.logger.fancy_json(rows))
         return rows
 
     def addCurrencySubscription(self, tid, flair):
@@ -181,7 +181,7 @@ class DatabaseManager:
         rows = self._select(table, what, where)
         if tid and flair_from and flair_to and rows:
             rows = rows[0]
-        self.logger.log('Returning %s' % (rows,))
+        self.logger.log('Returning %s' % self.logger.fancy_json(rows))
         return rows
 
     def addRateSubscription(self, tid, flair_from, flair_to):
@@ -204,7 +204,7 @@ class DatabaseManager:
 
     def updateRateSubscription(self, tid, flair_from, flair_to, active):
         self.logger.log('Updating SubscriptionsCoin tid %s, flair_from %s and flair_to %s with value %s'
-                        % (tid, flair_from, flair_to))
+                        % (tid, flair_from, flair_to, active))
         uid = self.getUser(tid)[0]
         cid_from = self.getCurrency(flair_from)[0]
         cid_to = self.getCurrency(flair_to)[0]
