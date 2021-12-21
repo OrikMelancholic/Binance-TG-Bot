@@ -163,7 +163,7 @@ def show_candles_list():
     plot_parameters.current_stage = 4
     message = "Выберите ширину свечи для графика:"
 
-    buttons = InlineKeyboardMarkup(
+    candle_buttons_std = InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
@@ -192,6 +192,31 @@ def show_candles_list():
             ]
         ]
     )
+
+    candle_buttons_sml = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "15 Минут", callback_data="mrkt_4_15m"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "1 Час", callback_data="mrkt_4_1h"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "4 Часа", callback_data="mrkt_4_4h"
+                )
+            ]
+        ]
+    )
+
+    if plot_parameters.date_interval == 1:
+        buttons = candle_buttons_sml
+    else:
+        buttons = candle_buttons_std
 
     bot_message = bot.send_message(chat_id=chat_id,
                                    text=message,
