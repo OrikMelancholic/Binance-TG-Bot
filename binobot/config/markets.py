@@ -936,3 +936,9 @@ def get_top_5_in_market(market_code):
         return btc_market[:5]
     elif market_code == "ETH":
         return eth_market[:5]
+
+
+def check_usdt(currency):
+    if currency in usdt_market:
+        return 1
+    return 0
