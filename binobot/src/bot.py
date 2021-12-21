@@ -59,13 +59,13 @@ def market_selection(query):
     if "fvrt" == query.data:
         bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
         show_favorites()
-    elif "fvrt_back" == query.data:
+    elif "fvrt_back" in query.data:
         bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
         main_menu()
-    elif "fvrt_add" == query.data:
+    elif "fvrt_add" in query.data:
         bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
         add_currency_to_fav_list()
-    elif "fvrt_1" == query.data:
+    elif "fvrt_1" in query.data:
         if query.data == "fvrt_1_back":
             bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
             show_favorites()
@@ -73,8 +73,10 @@ def market_selection(query):
             market = query.data.replace('fvrt_1_', '')
             print(f"fav market => {market}")
             bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранный рынок: {market}")
-    elif "fvrt_fav" == query.data:
-        print(f"fvrt_fav => {query.data}")
+    elif "fvrt_fav_" in query.data:
+        fav = query.data.replace('fvrt_fav_', '')
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        show_actions_menu(fav)
 
 
 def show_favorites():
@@ -84,7 +86,7 @@ def show_favorites():
     favorites = InlineKeyboardMarkup()
 
     for fav in fav_list:
-        favorites.add(InlineKeyboardButton(text=fav, callback_data=f"fvrt_fav_{fav}]"))
+        favorites.add(InlineKeyboardButton(text=fav, callback_data=f"fvrt_fav_{fav}"))
 
     favorites.add(InlineKeyboardButton("Добавить избранное", callback_data=f"fvrt_add"))
     favorites.add(InlineKeyboardButton("Назад", callback_data=f"fvrt_back"))
@@ -106,8 +108,17 @@ def add_currency_to_fav_list():
     last_bot_message_id = bot_message.message_id
 
 
-def show_actions_menu():
+def show_actions_menu(selected_curr):
     global last_bot_message_id
+    message = f"Текущая цена {selected_curr}: 0$\n" \
+              f"Уведомления отсутствуют"
+    buttons = InlineKeyboardMarkup()
+    buttons.add(InlineKeyboardButton(text="Добавить уведомление об изменении цены",callback_data=f"fvrt_fav_notification"))
+    buttons.add(InlineKeyboardButton(text="Удалить", callback_data=f"fvrt_fav_delete"))
+    buttons.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id, text=message, reply_markup=buttons)
+    last_bot_message_id = bot_message.message_id
 
 
 @bot.callback_query_handler(lambda query: query.data.startswith("mrkt"))
