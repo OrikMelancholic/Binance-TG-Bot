@@ -261,11 +261,14 @@ def handle_text(message):
 
         if markets_list.check_coin_in_market(currency_code, selected_market) == 0:
             bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot_message = bot.send_message(
+                chat_id=chat_id,
+                text="Такой валюты на выбранном рынке не существует.\nПопробуйте заново.")
+            last_bot_message_id = bot_message.message_id
         else:
             plot_parameters.currency = currency_code
             bot.delete_message(chat_id=chat_id, message_id=message.message_id)
-            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
-                                  text=f"Выбранная валюта: {currency_code}")
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранная валюта: {currency_code}")
             show_intervals_list()
     else:
         print("Не валюта", message.text)
