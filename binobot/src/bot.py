@@ -46,6 +46,36 @@ def main_menu():
     last_bot_message_id = bot_message.message_id
 
 
+@bot.callback_query_handler(lambda query: query.data.startswith("fvrt"))
+def market_selection(query):
+    global chat_id
+    global last_bot_message_id
+
+    print(f"query => {query.data}")
+    if "fvrt" == query.data:
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        show_favorites()
+    elif "fvrt_back" == query.data:
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        main_menu()
+
+
+def show_favorites():
+    global last_bot_message_id
+    plot_parameters.current_stage = 1
+    message = "У вас 3 подписки:"
+    favorites = InlineKeyboardMarkup()
+
+    favorites.add(InlineKeyboardButton("BTC/BNB", callback_data=f"fvrt_btcbnb"))
+    favorites.add(InlineKeyboardButton("Добавить избранное", callback_data=f"fvrt_add"))
+    favorites.add(InlineKeyboardButton("Назад", callback_data=f"fvrt_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id,
+                                   text=message,
+                                   reply_markup=favorites)
+    last_bot_message_id = bot_message.message_id
+
+
 @bot.callback_query_handler(lambda query: query.data.startswith("mrkt"))
 def market_selection(query):
     global chat_id
