@@ -1,6 +1,5 @@
 import sqlite3
 import sys
-
 sys.path.append('..')
 
 from Utilities import Logger
@@ -13,7 +12,7 @@ class DatabaseManager:
                 'Users(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, tid INTEGER NOT NULL UNIQUE)'
             ),
             (
-                'Currencies(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usdvalue INTEGER, flair TEXT UNIQUE, '
+                'Currencies(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usdvalue FLOAT, flair TEXT UNIQUE, '
                 'last_event DATETIME DEFAULT CURRENT_TIMESTAMP)'
             ),
             (
@@ -26,13 +25,11 @@ class DatabaseManager:
                 'SubscriptionsRate(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, uid INTEGER, '
                 'cid_from INTEGER, cid_to INTEGER, '
                 'last_event DATETIME DEFAULT CURRENT_TIMESTAMP, active BOOLEAN DEFAULT 1, '
-                'FOREIGN KEY(uid) REFERENCES Currencies(id), '
-                'FOREIGN KEY(cid_to) REFERENCES Currencies(id))'
+                'FOREIGN KEY(uid) REFERENCES Users(id), '
+                'FOREIGN KEY(cid_to) REFERENCES Currencies(id), '
                 'FOREIGN KEY(cid_from) REFERENCES Currencies(id))'
             )
         )
-
-        self.logger.log('Creating tables...')
 
         for table in tables:
             try:
