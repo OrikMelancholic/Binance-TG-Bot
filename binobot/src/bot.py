@@ -1,14 +1,13 @@
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from bot.config import markets as markets_list
-from bot.config import config as configs
-from bot.src.plot_params import PlotParams
-from bot.src.binance_connector import BinanceConnector
+from binobot.config import config as config, markets
+from binobot.src.plot_params import PlotParams
+from binobot.src.binance_connector import BinanceConnector
 from datetime import datetime, timedelta
 
 plot_parameters = PlotParams()
-token = configs.telebot_token
+token = config.telebot_token
 bot = telebot.TeleBot(token)
 
 last_bot_message_id = -1
@@ -329,7 +328,7 @@ def handle_text(message):
         currency_code = message.text
         selected_market = plot_parameters.market
 
-        if markets_list.check_coin_in_market(currency_code, selected_market) == 0:
+        if markets.check_coin_in_market(currency_code, selected_market) == 0:
             bot.delete_message(chat_id=chat_id, message_id=message.message_id)
             bot_message = bot.send_message(
                 chat_id=chat_id,
