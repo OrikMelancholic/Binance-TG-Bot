@@ -35,10 +35,12 @@ class AuthHandler(RequestHandler):
             token = self.get_argument('token')
         except tornado.web.MissingArgumentError:
             response(self, 'Необходима авторизация.', 400)
+            self.finish()
             return
 
         if token != _trusted_token:
             response(self, 'Неактивный токен.', 401)
+            self.finish()
 
 
 class LandingHandler(RequestHandler):
