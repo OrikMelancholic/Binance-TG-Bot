@@ -62,3 +62,28 @@ class ServerConnector:
 
     def get_current_price(self, value_name):  # in USD
         return self.get_currencies(value_name, binance=True)
+
+    def associate_user(self, tg_user_id):
+        data = self.get_smth("/user/associate", tid=tg_user_id, token=token)
+        return data
+
+    def get_subscriptions(self, user_id):
+        data = self.get_smth("/user/subscriptions", tid=user_id, token=token)
+        if 'message' in data:
+            return data['message']
+        else:
+            return {}
+
+    def add_subscription(self, user_id, currency, target):
+        data = self.get_smth("/currencies/subscribe", tid=user_id, flair=currency, target=target, token=token)
+        if 'code' in data and data['code'] == 200:
+            return True
+        else:
+            return False
+
+    def remove_subscription(self, user_id, currency):
+        data = self.get_smth("/currencies/unsubscribe", tid=user_id, flair=currency, token=token)
+        if 'code' in data and data['code'] == 200:
+            return True
+        else:
+            return False
