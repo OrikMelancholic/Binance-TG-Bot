@@ -51,7 +51,7 @@ def main_menu():
 
 
 @bot.callback_query_handler(lambda query: query.data.startswith("fvrt"))
-def market_selection(query):
+def favorites_selection(query):
     global chat_id
     global last_bot_message_id
 
@@ -77,6 +77,9 @@ def market_selection(query):
         if "fvrt_fav_delete" == query.data:
             print("remove shit")
             # Удалить подписку на валюту
+        elif "fvrt_fav_notification" == query.data:
+            bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+            add_notification_for_currency(fav_parameters.currency)
         else:
             fav = query.data.replace('fvrt_fav_', '')
             bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
@@ -112,12 +115,24 @@ def add_currency_to_fav_list():
     last_bot_message_id = bot_message.message_id
 
 
+def add_notification_for_currency(currency):
+    global last_bot_message_id
+    fav_parameters.current_stage = 2
+    message = f"Введите желаемую цену для {currency}, по достижению которой вы получите уведомление"
+    back_button = InlineKeyboardMarkup()
+    back_button.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id, text=message, reply_markup=back_button)
+    last_bot_message_id = bot_message.message_id
+
+
 def show_actions_menu(selected_curr):
     global last_bot_message_id
     message = f"Текущая цена {selected_curr}: 0$\n" \
               f"Уведомления отсутствуют"
     buttons = InlineKeyboardMarkup()
-    buttons.add(InlineKeyboardButton(text="Добавить уведомление об изменении цены",callback_data=f"fvrt_fav_notification"))
+    buttons.add(
+        InlineKeyboardButton(text="Добавить уведомление об изменении цены", callback_data=f"fvrt_fav_notification"))
     buttons.add(InlineKeyboardButton(text="Удалить", callback_data=f"fvrt_fav_delete"))
     buttons.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
 
@@ -436,6 +451,22 @@ def handle_text(message):
             bot_message = bot.send_message(
                 chat_id=chat_id,
                 text=f"Такой валюты ({currency_code}) на рынке USDT не существует.\nПопробуйте заново.")
+            last_bot_message_id = bot_message.message_id
+    elif fav_parameters.current_stage == 2:
+        notify_price_message = message.text
+        notify_price = 0
+
+        try:
+            notify_price = float(notify_price_message)
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                                  text=f"Уведомление о достижении валютой {fav_parameters.currency} цены в {notify_price}")
+            show_actions_menu(fav_parameters.currency)
+        except:
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot_message = bot.send_message(
+                chat_id=chat_id,
+                text=f"Некорректный ввод! Попробуйте заново.")
             last_bot_message_id = bot_message.message_id
     else:
         print("Не ало", message.text)
