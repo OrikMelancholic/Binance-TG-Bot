@@ -74,7 +74,17 @@ class ServerConnector:
         else:
             return {}
 
-    def add_subscription(self, user_id, currency, target):
+    def active_subscription(self, user_id, currency):
+        data = self.get_smth("/user/subscriptions", tid=user_id, token=token)
+        if 'message' in data:
+            for i in data['message']['currencies']:
+                if i['flair'] == currency and i['target'] is not None:
+                    return i['target']
+            return {}
+        else:
+            return {}
+
+    def add_subscription(self, user_id, currency, target=None):
         data = self.get_smth("/currencies/subscribe", tid=user_id, flair=currency, target=target, token=token)
         if 'code' in data and data['code'] == 200:
             return True
