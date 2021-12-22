@@ -74,9 +74,13 @@ def market_selection(query):
             print(f"fav market => {market}")
             bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранный рынок: {market}")
     elif "fvrt_fav_" in query.data:
-        fav = query.data.replace('fvrt_fav_', '')
-        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
-        show_actions_menu(fav)
+        if "fvrt_fav_delete" == query.data:
+            print("remove shit")
+            # Удалить подписку на валюту
+        else:
+            fav = query.data.replace('fvrt_fav_', '')
+            bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+            show_actions_menu(fav)
 
 
 def show_favorites():
