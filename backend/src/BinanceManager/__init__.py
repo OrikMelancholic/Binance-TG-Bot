@@ -50,6 +50,7 @@ class BinanceManager:
                             'user_id': _[-1],
                             'rising': diffs[1] > 0,
                         }]
+                        self.CurrencySubscribe(_[-1], flair)
             self.dbm.updateCurrency(flair, current_price)
         if new_events:
             self.logger.log('New messages to websocket: %s' % new_events)
@@ -164,7 +165,7 @@ class BinanceManager:
         self.logger.log('Requested rates via %s:\n%s' % (flairs, self.logger.fancy_json(data)))
         return data
 
-    def CurrencySubscribe(self, tid, flair, target):
+    def CurrencySubscribe(self, tid, flair, target=None):
         self.updateCurrency(flair)
         data_db = self.dbm.getCurrencySubscription(tid, flair)
         if data_db:
