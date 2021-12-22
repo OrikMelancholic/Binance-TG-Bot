@@ -4,7 +4,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from binobot.config import config as config, markets
 from binobot.src.plot_params import PlotParams
 from binobot.src.fav_params import FavParams
-from binobot.src.binance_connector import BinanceConnector
+from binobot.src.server_connector import ServerConnector
 from datetime import datetime, timedelta
 
 plot_parameters = PlotParams()
@@ -365,35 +365,35 @@ def show_candles_list():
 def show_results():
     global last_bot_message_id
 
-    bc = BinanceConnector()
+    serv = ServerConnector()
     symbols = plot_parameters.currency + plot_parameters.market
     kline = plot_parameters.candle_size
     from_date = datetime.now() - timedelta(days=plot_parameters.date_interval)
-    data = bc.get_data(symbols, kline, str(from_date))
+    data = serv.get_history_data(symbols, kline, str(from_date))
     data_prepared = data['median'].to_numpy()
     length = data['Open time'].tolist()
-    bc.plot(length, data_prepared)
+    serv.plot(length, data_prepared)
 
     buttons = InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
-                    f"Глобальный минимум: {bc.get_min(data_prepared)}", callback_data="mrkt_pass"
+                    f"Глобальный минимум: {serv.get_min(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Глобальный максимум: {bc.get_max(data_prepared)}", callback_data="mrkt_pass"
+                    f"Глобальный максимум: {serv.get_max(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Соотношение: {bc.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_pass"
+                    f"Соотношение: {serv.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Цена: {bc.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_pass"
+                    f"Цена: {serv.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_pass"
                 )
             ],
             [

@@ -1,8 +1,11 @@
+import matplotlib
 import json
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime
+
+matplotlib.use('agg')
+
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 token = '03e2042c9fd8f6cdb946ddb123576736defff6ed1859cdce9ef6b34b008a97b9'
 
@@ -34,8 +37,8 @@ class ServerConnector:
         data = self.get_smth('currencies/get', flair=flair, binance=binance)
         return data['message'][0]['price']
 
-    def get_rates(self, symbol, binance=False):                                                 
-        data = self.get_smth('rates/get', symbol=symbol, binance=binance)                       
+    def get_rates(self, symbol, binance=False):
+        data = self.get_smth('rates/get', symbol=symbol, binance=binance)
         return data['message'][0]['price']
 
     def plot(self, time, data):
@@ -57,17 +60,5 @@ class ServerConnector:
     def get_current_pair_ratio(self, data):
         return data[-1]
 
-    def get_current_price(self, value_name): # in USD
-        return self.get_rates(value_name, binance=True)
-                                                                                                
-                                                                                                
-if __name__ == "__main__":                                                                      
-    sc = ServerConnector()                                                                      
-    # print(sc.get_history_data(                                                                
-    #         'BTCUSDT',                                                                        
-    #         '1h',                                                                             
-    #         datetime(2021, 12, 20).strftime(date_format)                                      
-    # ))                                                                                        
-    # print(sc.get_currencies('BTC'))                                                           
-    print(sc.get_rates('BTCUSDT'))                                                              
-                                                                                                
+    def get_current_price(self, value_name):  # in USD
+        return self.get_currencies(value_name, binance=True)
