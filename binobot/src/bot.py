@@ -3,15 +3,19 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from binobot.config import config as config, markets
 from binobot.src.plot_params import PlotParams
-from binobot.src.binance_connector import BinanceConnector
+from binobot.src.fav_params import FavParams
+from binobot.src.server_connector import ServerConnector
 from datetime import datetime, timedelta
 
 plot_parameters = PlotParams()
+fav_parameters = FavParams()
 token = config.telebot_token
 bot = telebot.TeleBot(token)
 
 last_bot_message_id = -1
 chat_id = -1
+
+fav_list = []
 
 
 @bot.message_handler(commands=['start'])
@@ -43,6 +47,96 @@ def main_menu():
     bot_message = bot.send_message(chat_id=chat_id,
                                    text="Добро пожаловать.\nЭтот бот поможет в работе с Binance!",
                                    reply_markup=menu)
+    last_bot_message_id = bot_message.message_id
+
+
+@bot.callback_query_handler(lambda query: query.data.startswith("fvrt"))
+def favorites_selection(query):
+    global chat_id
+    global last_bot_message_id
+
+    print(f"query => {query.data}")
+    if "fvrt" == query.data:
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        show_favorites()
+    elif "fvrt_back" in query.data:
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        main_menu()
+    elif "fvrt_add" in query.data:
+        bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+        add_currency_to_fav_list()
+    elif "fvrt_1" in query.data:
+        if query.data == "fvrt_1_back":
+            bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+            show_favorites()
+        else:
+            market = query.data.replace('fvrt_1_', '')
+            print(f"fav market => {market}")
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id, text=f"Выбранный рынок: {market}")
+    elif "fvrt_fav_" in query.data:
+        if "fvrt_fav_delete" == query.data:
+            print("remove shit")
+            # Удалить подписку на валюту
+        elif "fvrt_fav_notification" == query.data:
+            bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+            add_notification_for_currency(fav_parameters.currency)
+        else:
+            fav = query.data.replace('fvrt_fav_', '')
+            bot.delete_message(chat_id=chat_id, message_id=last_bot_message_id)
+            show_actions_menu(fav)
+
+
+def show_favorites():
+    global last_bot_message_id
+    plot_parameters.current_stage = 1
+    message = "У вас 3 подписки:"
+    favorites = InlineKeyboardMarkup()
+
+    for fav in fav_list:
+        favorites.add(InlineKeyboardButton(text=fav, callback_data=f"fvrt_fav_{fav}"))
+
+    favorites.add(InlineKeyboardButton("Добавить избранное", callback_data=f"fvrt_add"))
+    favorites.add(InlineKeyboardButton("Назад", callback_data=f"fvrt_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id,
+                                   text=message,
+                                   reply_markup=favorites)
+    last_bot_message_id = bot_message.message_id
+
+
+def add_currency_to_fav_list():
+    global last_bot_message_id
+    fav_parameters.current_stage = 1
+    message = "Введите код валюты, которую хотите добавить в избранное"
+    back_button = InlineKeyboardMarkup()
+    back_button.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id, text=message, reply_markup=back_button)
+    last_bot_message_id = bot_message.message_id
+
+
+def add_notification_for_currency(currency):
+    global last_bot_message_id
+    fav_parameters.current_stage = 2
+    message = f"Введите желаемую цену для {currency}, по достижению которой вы получите уведомление"
+    back_button = InlineKeyboardMarkup()
+    back_button.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id, text=message, reply_markup=back_button)
+    last_bot_message_id = bot_message.message_id
+
+
+def show_actions_menu(selected_curr):
+    global last_bot_message_id
+    message = f"Текущая цена {selected_curr}: 0$\n" \
+              f"Уведомления отсутствуют"
+    buttons = InlineKeyboardMarkup()
+    buttons.add(
+        InlineKeyboardButton(text="Добавить уведомление об изменении цены", callback_data=f"fvrt_fav_notification"))
+    buttons.add(InlineKeyboardButton(text="Удалить", callback_data=f"fvrt_fav_delete"))
+    buttons.add(InlineKeyboardButton(text="Назад", callback_data=f"fvrt_1_back"))
+
+    bot_message = bot.send_message(chat_id=chat_id, text=message, reply_markup=buttons)
     last_bot_message_id = bot_message.message_id
 
 
@@ -271,35 +365,35 @@ def show_candles_list():
 def show_results():
     global last_bot_message_id
 
-    bc = BinanceConnector()
+    serv = ServerConnector()
     symbols = plot_parameters.currency + plot_parameters.market
     kline = plot_parameters.candle_size
     from_date = datetime.now() - timedelta(days=plot_parameters.date_interval)
-    data = bc.get_data(symbols, kline, str(from_date))
+    data = serv.get_history_data(symbols, kline, str(from_date))
     data_prepared = data['median'].to_numpy()
     length = data['Open time'].tolist()
-    bc.plot(length, data_prepared)
+    serv.plot(length, data_prepared)
 
     buttons = InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
-                    f"Глобальный минимум: {bc.get_min(data_prepared)}", callback_data="mrkt_pass"
+                    f"Глобальный минимум: {serv.get_min(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Глобальный максимум: {bc.get_max(data_prepared)}", callback_data="mrkt_pass"
+                    f"Глобальный максимум: {serv.get_max(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Соотношение: {bc.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_pass"
+                    f"Соотношение: {serv.get_current_pair_ratio(data_prepared)}", callback_data="mrkt_pass"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    f"Цена: {bc.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_pass"
+                    f"Цена: {serv.get_current_price(plot_parameters.currency)} $", callback_data="mrkt_pass"
                 )
             ],
             [
@@ -332,7 +426,7 @@ def handle_text(message):
             bot.delete_message(chat_id=chat_id, message_id=message.message_id)
             bot_message = bot.send_message(
                 chat_id=chat_id,
-                text="Такой валюты на выбранном рынке не существует.\nПопробуйте заново.")
+                text=f"Такой валюты ({currency_code}) на выбранном рынке не существует.\nПопробуйте заново.")
             last_bot_message_id = bot_message.message_id
         else:
             plot_parameters.currency = currency_code
@@ -340,8 +434,42 @@ def handle_text(message):
             bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
                                   text=f"Выбранная валюта: {currency_code}")
             show_intervals_list()
+    elif fav_parameters.current_stage == 1:
+        currency_code = message.text.upper()
+
+        if markets.check_usdt(currency_code) == 1:
+            fav_parameters.currency = currency_code
+            fav_list.append(currency_code)
+
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=last_bot_message_id,
+                                  text=f"Валюта {currency_code} добавлена в избранные")
+            show_favorites()
+        else:
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot_message = bot.send_message(
+                chat_id=chat_id,
+                text=f"Такой валюты ({currency_code}) на рынке USDT не существует.\nПопробуйте заново.")
+            last_bot_message_id = bot_message.message_id
+    elif fav_parameters.current_stage == 2:
+        notify_price_message = message.text
+        notify_price = 0
+
+        try:
+            notify_price = float(notify_price_message)
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot.edit_message_text(chat_id=chat_id, message_id=last_bot_message_id,
+                                  text=f"Уведомление о достижении валютой {fav_parameters.currency} цены в {notify_price}")
+            show_actions_menu(fav_parameters.currency)
+        except:
+            bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+            bot_message = bot.send_message(
+                chat_id=chat_id,
+                text=f"Некорректный ввод! Попробуйте заново.")
+            last_bot_message_id = bot_message.message_id
     else:
-        print("Не валюта", message.text)
+        print("Не ало", message.text)
         bot.delete_message(chat_id=chat_id, message_id=message.message_id)
 
 
