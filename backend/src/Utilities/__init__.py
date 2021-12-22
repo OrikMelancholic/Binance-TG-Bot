@@ -1,4 +1,5 @@
 import json
+import logging
 
 _max_label = 0
 
@@ -11,18 +12,24 @@ class Logger:
         if len(label) > _max_label:
             _max_label = len(label)
 
-    def _print(self, status, msg):
-        msg = '[%s] %s | %s' % (self.label.ljust(_max_label), status, msg)
-        print(msg)
+    def _print(self, msg):
+        msg = '[%s] | %s' % (self.label.ljust(_max_label), msg)
+        return msg
 
     def log(self, msg):
-        self._print('LOG', msg)
+        logging.info(self._print(msg))
+
+    def warning(self, msg):
+        logging.warning(self._print(msg))
+
+    def debug(self, msg):
+        logging.debug(self._print(msg))
 
     def error(self, msg):
-        self._print('ERROR', msg)
+        logging.error(self._print(msg))
 
     def critical(self, msg):
-        self._print('CRITICAL', msg)
+        logging.critical(self._print(msg))
 
     def fancy_json(self, json_data):
         return json.dumps(json_data, sort_keys=True, indent=4)

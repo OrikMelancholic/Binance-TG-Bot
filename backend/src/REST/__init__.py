@@ -2,7 +2,6 @@ import tornado.gen
 from tornado.web import RequestHandler
 from datetime import datetime, timedelta
 
-from BinanceManager import BinanceManager as BinM
 from Utilities import Logger
 
 _version = "0.1"
@@ -124,8 +123,49 @@ class CurrenciesUpdateHandler(AuthHandler):
         self.bin_manager_call('CurrenciesUpdateHandler', self.binm.updateCurrency, data_in)
 
 
-class CurrenciesSubscribeHandler(TeapotHandler):
-    pass
+class CurrenciesSubscribeHandler(AuthHandler):
+    def get(self):
+        tid = self.get_argument('tid')
+        flair = self.get_argument('flair')
+        target = self.get_argument('target', default=None)
+
+        try:
+            tid = int(tid)
+        except ValueError:
+            response(self, 'Некорректный идентификатор пользователя.', 400)
+            return
+
+        if target is not None:
+            try:
+                target = float(target)
+            except ValueError:
+                response(self, 'Некорректное целевое значение.', 400)
+                return
+
+        data_in = {
+            'tid': tid,
+            'flair': flair,
+            'target': target
+        }
+        self.bin_manager_call('CurrenciesSubscribeHandler', self.binm.CurrencySubscribe, data_in)
+
+
+class CurrenciesUnsubscribeHandler(AuthHandler):
+    def get(self):
+        tid = self.get_argument('tid')
+        flair = self.get_argument('flair')
+
+        try:
+            tid = int(tid)
+        except ValueError:
+            response(self, 'Некорректный идентификатор пользователя.', 400)
+            return
+
+        data_in = {
+            'tid': tid,
+            'flair': flair,
+        }
+        self.bin_manager_call('CurrenciesUnsubscribeHandler', self.binm.CurrencyUnsubscribe, data_in)
 
 
 class RatesGetHandler(BinanceHandler):
@@ -150,17 +190,31 @@ class RatesGetHandler(BinanceHandler):
         self.bin_manager_call('RatesGetHandler', self.binm.getRates, data_in)
 
 
-class RatesSubscribeHandler(TeapotHandler):
-    pass
+class UserAssociateHandler(AuthHandler):
+    def get(self):
+        tid = self.get_argument('tid')
+        try:
+            tid = int(tid)
+        except ValueError:
+            response(self, 'Некорректный идентификатор пользователя.', 400)
+            return
+
+        data_in = {
+            'tid': tid,
+        }
+        self.bin_manager_call('UserAssociateHandler', self.binm.AssociateUser, data_in)
 
 
-class UserAssociateHandler(TeapotHandler):
-    pass
+class UserSubscriptionsGetHandler(AuthHandler):
+    def get(self):
+        tid = self.get_argument('tid')
+        try:
+            tid = int(tid)
+        except ValueError:
+            response(self, 'Некорректный идентификатор пользователя.', 400)
+            return
 
-
-class UserSubscribesGetHandler(TeapotHandler):
-    pass
-
-
-class UserUnsubscribeHandler(TeapotHandler):
-    pass
+        data_in = {
+            'tid': tid,
+        }
+        self.bin_manager_call('UserSubscriptionsGetHandler', self.binm.GetUserSubscriptions, data_in)

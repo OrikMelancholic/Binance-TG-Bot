@@ -1,5 +1,9 @@
+import asyncio
+
+import tornado.concurrent
 from binance import Client
 import sys
+from datetime import timedelta
 sys.path.append('..')
 
 from Utilities import Logger
@@ -7,14 +11,52 @@ from DatabaseManager import DatabaseManager as DBM
 
 
 class BinanceManager:
-    def __init__(self, dbm=None):
+    def __init__(self, io_loop, dbm=None):
         # Who actually cares?
         self.api_key = 'jXepnmVYibuE2E6MsQ2TRHdBD4dkxEAA0HDucwoMXxNbNY3hPVmPB329VkYkY3cz'
         self.api_secret = 'na8CDIaNlIt7nlMcyndhVbb6cNbEtRRUVl9UfO0CCGOtlMYduuyimdwQySvYOpkH'
         self.client = Client(api_key=self.api_key, api_secret=self.api_secret, tld='com')
         self.logger = Logger('BinM')
+        self.io_loop = io_loop
+        self.push_stack = tornado.concurrent.Future()
+        self.push_stack_delta = timedelta(seconds=1200)
+        self.logger.log('Binance update time set to: %s seconds' % self.push_stack_delta)
         if not dbm:
             self.dbm = DBM()
+
+        self.io_loop.call_later(self.push_stack_delta.total_seconds(), self.binanceUpdate)
+
+    def resetStack(self):
+        self.logger.log('Future reset')
+        self.push_stack = tornado.concurrent.Future()
+
+    def binanceUpdate(self):
+        data_db = self.dbm.getCurrency()
+        data = {_[2]: _[1] for _ in data_db}
+        new_events = []
+        for flair in data.keys():
+            data_binance = self.client.get_ticker(symbol=flair + 'USDT')
+            current_price = float(data_binance['lastPrice'])
+            data_db = self.dbm.getCurrencySubscription(flair=flair)
+            if data_db:
+                for _ in data_db:
+                    if _[3]:
+                        continue
+                    diffs = (data[flair] - _[3], current_price - _[3])
+                    if diffs[0] * diffs[1] < 0:
+                        new_events += [{
+                            'flair': flair,
+                            'price': current_price,
+                            'user_id': _[-1],
+                            'rising': diffs[1] > 0,
+                        }]
+            self.dbm.updateCurrency(flair, current_price)
+        if new_events:
+            self.logger.log('New messages to websocket: %s' % new_events)
+            self.push_stack.set_result(new_events)
+            self.io_loop.call_later(2, self.resetStack)
+
+        self.io_loop.call_later(self.push_stack_delta.total_seconds(), self.binanceUpdate)
 
     def getUsdValue(self, flair):
         symbol = flair + 'USDT'
@@ -24,7 +66,7 @@ class BinanceManager:
 
     def getHistory(self, symbol, interval, start, end=None):
         if isinstance(symbol, tuple):
-            flair_pair = ''.join(symbol)
+            symbol = ''.join(symbol)
 
         data = []
         keys = (
@@ -120,4 +162,42 @@ class BinanceManager:
 
         flairs = {'symbol': symbol, 'flairFrom': flairFrom, 'flairTo': flairTo}
         self.logger.log('Requested rates via %s:\n%s' % (flairs, self.logger.fancy_json(data)))
+        return data
+
+    def CurrencySubscribe(self, tid, flair, target):
+        self.updateCurrency(flair)
+        data_db = self.dbm.getCurrencySubscription(tid, flair)
+        if data_db:
+            data_db = self.dbm.updateCurrencySubscription(tid, flair, target, 1)
+        else:
+            data_db = self.dbm.addCurrencySubscription(tid, flair, target)
+
+        self.logger.log('Requested to subscribe %s to %s:\n%s' % (tid, flair, self.logger.fancy_json(data_db)))
+        return {'success': bool(data_db)}
+
+    def CurrencyUnsubscribe(self, tid, flair):
+        data_db = self.dbm.getCurrencySubscription(tid, flair)
+        if data_db:
+            data_db = self.dbm.updateCurrencySubscription(tid, flair, active=0)
+            self.logger.log('Requested to unsubscribe %s to %s:\n%s' % (tid, flair, self.logger.fancy_json(data_db)))
+            return {'success': bool(data_db)}
+        else:
+            return {'success': False}
+
+    def AssociateUser(self, tid):
+        data_db = self.dbm.getUser(tid)
+        if not data_db:
+            data_db = self.dbm.addUser(tid)
+
+        self.logger.log('Requested to associate Telegram user %s:\n%s' % (tid, self.logger.fancy_json(data_db)))
+        return data_db
+
+    def GetUserSubscriptions(self, tid):
+        data = {}
+        data_db = self.dbm.getCurrencySubscription(tid)
+        if data_db:
+            data_db = [{'flair': _[8], 'target': _[3]} for _ in data_db]
+            data['currencies'] = data_db
+
+        self.logger.log('Requested %s\'s subscriptions:\n%s' % (tid, self.logger.fancy_json(data)))
         return data
