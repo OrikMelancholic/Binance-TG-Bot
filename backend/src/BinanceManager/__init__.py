@@ -19,7 +19,7 @@ class BinanceManager:
         self.logger = Logger('BinM')
         self.io_loop = io_loop
         self.push_stack = tornado.concurrent.Future()
-        self.push_stack_delta = timedelta(seconds=1200)
+        self.push_stack_delta = timedelta(seconds=5)
         self.logger.log('Binance update time set to: %s seconds' % self.push_stack_delta)
         if not dbm:
             self.dbm = DBM()
@@ -40,7 +40,7 @@ class BinanceManager:
             data_db = self.dbm.getCurrencySubscription(flair=flair)
             if data_db:
                 for _ in data_db:
-                    if _[3]:
+                    if not _[3]:
                         continue
                     diffs = (data[flair] - _[3], current_price - _[3])
                     if diffs[0] * diffs[1] < 0:
