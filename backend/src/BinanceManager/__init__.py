@@ -7,13 +7,14 @@ from DatabaseManager import DatabaseManager as DBM
 
 
 class BinanceManager:
-    def __init__(self):
+    def __init__(self, dbm=None):
         # Who actually cares?
         self.api_key = 'jXepnmVYibuE2E6MsQ2TRHdBD4dkxEAA0HDucwoMXxNbNY3hPVmPB329VkYkY3cz'
         self.api_secret = 'na8CDIaNlIt7nlMcyndhVbb6cNbEtRRUVl9UfO0CCGOtlMYduuyimdwQySvYOpkH'
         self.client = Client(api_key=self.api_key, api_secret=self.api_secret, tld='com')
         self.logger = Logger('BinM')
-        self.dbm = DBM()
+        if not dbm:
+            self.dbm = DBM()
 
     def getUsdValue(self, flair):
         symbol = flair + 'USDT'

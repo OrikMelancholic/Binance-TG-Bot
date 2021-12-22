@@ -8,7 +8,6 @@ from Utilities import Logger
 _version = "0.1"
 _trusted_token = '03e2042c9fd8f6cdb946ddb123576736defff6ed1859cdce9ef6b34b008a97b9'
 _logger = Logger('REST')
-_binm = BinM()
 
 
 def str2dt(time):
@@ -23,12 +22,23 @@ def response(handler, message=None, code=200):
     handler.write(resp)
 
 
+class BinanceHandler(RequestHandler):
+    def initialize(self, binm):
+        self.binm = binm
+
+    def bin_manager_call(self, handler_name, method, data_in):
+        _logger.log('%s:\n%s' % (handler_name, _logger.fancy_json(data_in)))
+        data_out = method(**data_in)
+        _logger.log('Returning:\n%s' % _logger.fancy_json(data_out))
+        response(self, data_out)
+
+
 class TeapotHandler(RequestHandler):
     def get(self):
         response(self, {'response': 'Я чайничек.'}, 418)
 
 
-class AuthHandler(RequestHandler):
+class AuthHandler(BinanceHandler):
     @tornado.gen.coroutine
     def prepare(self):
         try:
@@ -49,7 +59,7 @@ class LandingHandler(RequestHandler):
         _logger.log('Got landing request')
 
 
-class HistoryGetHandler(RequestHandler):
+class HistoryGetHandler(BinanceHandler):
     def get(self):
         flair_pair = self.get_argument("symbol", default=None)
         flair_from = self.get_argument("from", default=None)
@@ -85,13 +95,10 @@ class HistoryGetHandler(RequestHandler):
             'start': date_from,
             'end': date_to,
         }
-        _logger.log('HistoryGetHandler:\n%s' % _logger.fancy_json(data_in))
-        data_out = _binm.getHistory(**data_in)
-        _logger.log('Returning:\n%s' % _logger.fancy_json(data_out))
-        response(self, data_out)
+        self.bin_manager_call('HistoryGetHandler', self.binm.getHistory, data_in)
 
 
-class CurrenciesGetHandler(RequestHandler):
+class CurrenciesGetHandler(BinanceHandler):
     def get(self):
         flair = self.get_argument('flair', default=None)
         binance = self.get_argument('binance', default='False')
@@ -101,10 +108,7 @@ class CurrenciesGetHandler(RequestHandler):
             'flair': flair,
             'fromBinance': binance,
         }
-        _logger.log('CurrenciesGetHandler:\n%s' % _logger.fancy_json(data_in))
-        data_out = _binm.getCurrency(**data_in)
-        _logger.log('Returning:\n%s' % _logger.fancy_json(data_out))
-        response(self, data_out)
+        self.bin_manager_call('CurrenciesGetHandler', self.binm.getCurrency, data_in)
 
 
 class CurrenciesUpdateHandler(AuthHandler):
@@ -117,17 +121,14 @@ class CurrenciesUpdateHandler(AuthHandler):
         data_in = {
             'flair': flair,
         }
-        _logger.log('CurrenciesUpdateHandler:\n%s' % _logger.fancy_json(data_in))
-        data_out = _binm.updateCurrency(**data_in)
-        _logger.log('Returning:\n%s' % _logger.fancy_json(data_out))
-        response(self, data_out)
+        self.bin_manager_call('CurrenciesUpdateHandler', self.binm.updateCurrency, data_in)
 
 
 class CurrenciesSubscribeHandler(TeapotHandler):
     pass
 
 
-class RatesGetHandler(RequestHandler):
+class RatesGetHandler(BinanceHandler):
     def get(self):
         flair_pair = self.get_argument("symbol", default=None)
         flair_from = self.get_argument("from", default=None)
@@ -146,10 +147,7 @@ class RatesGetHandler(RequestHandler):
             'flairTo': flair_to,
             'fromBinance': binance,
         }
-        _logger.log('RatesGetHandler:\n%s' % _logger.fancy_json(data_in))
-        data_out = _binm.getRates(**data_in)
-        _logger.log('Returning:\n%s' % _logger.fancy_json(data_out))
-        response(self, data_out)
+        self.bin_manager_call('RatesGetHandler', self.binm.getRates, data_in)
 
 
 class RatesSubscribeHandler(TeapotHandler):

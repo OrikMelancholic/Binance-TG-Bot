@@ -24,4 +24,4 @@ if __name__ == "__main__":
     #binm.getUsdValue('BTC')
 
     mainm = MainM()
-    IOLoop.instance().start()
+    mainm.start()
