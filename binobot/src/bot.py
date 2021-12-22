@@ -416,9 +416,9 @@ def handle_text(message):
                                   text=f"Выбранная валюта: {currency_code}")
             show_intervals_list()
     elif fav_parameters.current_stage == 1:
-        available = 1
-        currency_code = message.text
-        if available == 1:
+        currency_code = message.text.upper()
+
+        if markets.check_usdt(currency_code) == 1:
             fav_parameters.currency = currency_code
             fav_list.append(currency_code)
 
