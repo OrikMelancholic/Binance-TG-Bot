@@ -46,6 +46,7 @@ class BinanceManager:
                     if diffs[0] * diffs[1] < 0:
                         new_events += [{
                             'flair': flair,
+                            'target': _[3],
                             'price': current_price,
                             'user_id': _[-1],
                             'rising': diffs[1] > 0,
