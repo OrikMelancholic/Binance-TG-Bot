@@ -1,33 +1,66 @@
-from tornado.ioloop import IOLoop
-from tornado import gen
-from tornado.websocket import websocket_connect
+import asyncio
+import threading
+import websockets
+import json
 
 
-class Client(object):
-    def __init__(self, websocket_url):
+class WebSocket(threading.Thread):
+    def __init__(self, websocket_url, bot):
+        super().__init__()
         self.url = websocket_url
-        self.ioloop = IOLoop.instance()
+        self._loop = asyncio.new_event_loop()
+        self._tasks = {}
+        self._stop_event = None
         self.ws = None
-        self.connect()
-        self.ioloop.start()
+        self.bot = bot
 
-    @gen.coroutine
-    def connect(self):
-        print("Попытка подключения")
-        try:
-            self.ws = yield websocket_connect(self.url)
-        except Exception:
-            print("Ошибка подключения")
-        else:
-            print("Подключено")
-            self.run()
-
-    @gen.coroutine
     def run(self):
-        while True:
-            msg = yield self.ws.read_message()
-            if msg is None:
-                print("Подключение закрыто")
-                self.ws = None
-                break
+        print("Запуск потока вебсокета...")
+        self._stop_event = asyncio.Event(loop=self._loop)
+        try:
+            self._loop.run_until_complete(self._stop_event.wait())
+            self._loop.run_until_complete(self._clean())
+        finally:
+            self._loop.close()
 
+    def stop(self):
+        self._loop.call_soon_threadsafe(self._stop_event.set)
+
+    def connect(self):
+        def _connect():
+            if self.url not in self._tasks:
+                task = self._loop.create_task(self._listen())
+                self._tasks[self.url] = task
+        self._loop.call_soon_threadsafe(_connect)
+
+    def disconnect(self):
+        def _disconnect():
+            task = self._tasks.pop(self.url, None)
+            if task is not None:
+                task.cancel()
+        self._loop.call_soon_threadsafe(_disconnect)
+
+    async def _listen(self):
+        try:
+            while not self._stop_event.is_set():
+                try:
+                    ws = await websockets.connect(self.url, loop=self._loop)
+                    while ws.open:
+                        packets = await ws.recv()
+                        packets = json.loads(packets)
+                        print('Получено от сервера: ', packets)
+                        for packet in packets:
+                            msg = 'Валюта %s прошла цель с курсом %s$ (%s)' % (
+                                packet['flair'], packet['price'], 'рост' if packet['rising'] else 'падение'
+                            )
+                            self.bot.send_message(chat_id=packet['user_id'], text=msg)
+                except Exception as e:
+                    print('Отловлена ошибка, перезапускаю вебсокет...\n', e)
+                    await asyncio.sleep(2, loop=self._loop)
+        finally:
+            self._tasks.pop(self.url, None)
+
+    async def _clean(self):
+        for task in self._tasks.values():
+            task.cancel()
+        await asyncio.gather(*self._tasks.values(), loop=self._loop)

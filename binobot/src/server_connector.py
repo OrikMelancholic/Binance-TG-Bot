@@ -4,6 +4,11 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import sys
+sys.path.append('../..')
+
+from binobot.src.websocket import WebSocket
+
 matplotlib.use('agg')
 
 date_format = '%Y-%m-%d %H:%M:%S.%f'
@@ -11,8 +16,12 @@ token = '03e2042c9fd8f6cdb946ddb123576736defff6ed1859cdce9ef6b34b008a97b9'
 
 
 class ServerConnector:
-    def __init__(self):
+    def __init__(self, bot):
         self.base_url = 'http://api.salieri.me/'
+        self.bot = bot
+        self.ws = WebSocket('ws://api.salieri.me/push?token=%s' % token, self.bot)
+        self.ws.start()
+        self.ws.connect()
 
     def get_smth(self, method, **params):
         url = '%s/%s' % (self.base_url, method)
@@ -30,7 +39,6 @@ class ServerConnector:
         df.drop(['Ignore', 'Close time'], axis=1, inplace=True)
         df.drop(['Open', 'Close', 'Volume first', 'Volume second', 'Number of trades', 'Buy volume first',
                  'Buy volume second', 'Low', 'High'], axis=1, inplace=True)
-        pd.set_option('display.max_columns', 20)
         return df
 
     def get_currencies(self, flair, binance=False):

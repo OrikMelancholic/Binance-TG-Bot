@@ -1,4 +1,6 @@
 import telebot
+import sys
+sys.path.append('../..')
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from binobot.config import config as config, markets
@@ -15,7 +17,7 @@ bot = telebot.TeleBot(token)
 last_bot_message_id = -1
 chat_id = -1
 
-server_connection = ServerConnector()
+server_connection = ServerConnector(bot)
 
 
 @bot.message_handler(commands=['start'])
