@@ -12,11 +12,12 @@ class DatabaseManager:
                 'Users(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, tid INTEGER NOT NULL UNIQUE)'
             ),
             (
-                'Currencies(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usdvalue FLOAT, flair TEXT UNIQUE, '
-                'last_event DATETIME DEFAULT CURRENT_TIMESTAMP)'
+                'Currencies(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usdvalue FLOAT NOT NULL, '
+                'flair TEXT UNIQUE NOT NULL, last_event DATETIME DEFAULT CURRENT_TIMESTAMP)'
             ),
             (
-                'SubscriptionsCoin(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, uid INTEGER, cid INTEGER, '
+                'SubscriptionsCoin(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+                'uid INTEGER NOT NULL, cid INTEGER NOT NULL, '
                 'target FLOAT, last_event DATETIME DEFAULT CURRENT_TIMESTAMP, active BOOLEAN DEFAULT 1, '
                 'FOREIGN KEY(uid) REFERENCES Users(id), '
                 'FOREIGN KEY(cid) REFERENCES Currencies(id))'
