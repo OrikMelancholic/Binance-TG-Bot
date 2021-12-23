@@ -106,15 +106,17 @@ class DatabaseManager:
         row = self.getCurrency(flair)
         return row
 
-    def getCurrencySubscription(self, tid=None, flair=None):
+    def getCurrencySubscription(self, tid=None, flair=None, active=None):
         what = '*'
         table = 'SubscriptionsCoin LEFT JOIN Currencies C on SubscriptionsCoin.cid = C.id ' \
                 'LEFT JOIN Users U on SubscriptionsCoin.uid = U.id'
-        where = ['active=1']
+        where =[]
         if tid:
             where += ['tid=%s' % tid]
         if flair:
             where += ['flair=\'%s\'' % flair]
+        if active is not None:
+            where += ['active=%s' % active]
         where = ' AND '.join(where)
         rows = self._select(table, what, where)
         if tid and flair and rows:

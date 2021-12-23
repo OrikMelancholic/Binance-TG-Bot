@@ -39,7 +39,7 @@ class PushWebSockets(WebSocketHandler):
         _logger.log('Sending messages %s' % messages)
         for message in messages:
             self.write_message(message)
-        self.io_loop.call_later(3, self.arm_message)
+        self.io_loop.call_later(5, self.arm_message)
 
     def open(self):
         _logger.log('Opened new websocket connection')
