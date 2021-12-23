@@ -46,14 +46,13 @@ class WebSocket(threading.Thread):
                 try:
                     ws = await websockets.connect(self.url, loop=self._loop)
                     while ws.open:
-                        packets = await ws.recv()
-                        packets = json.loads(packets)
-                        print('Получено от сервера: ', packets)
-                        for packet in packets:
-                            msg = 'Валюта %s прошла цель с курсом %s$ (%s)' % (
-                                packet['flair'], packet['price'], 'рост' if packet['rising'] else 'падение'
-                            )
-                            self.bot.send_message(chat_id=packet['user_id'], text=msg)
+                        packet = await ws.recv()
+                        packet = json.loads(packet)
+                        print('Получено от сервера: ', packet)
+                        msg = 'Валюта %s прошла цель в %s$ с курсом %s$ (%s)' % (
+                            packet['flair'], packet['target'], packet['price'], 'рост' if packet['rising'] else 'падение'
+                        )
+                        self.bot.send_message(chat_id=packet['user_id'], text=msg)
                 except Exception as e:
                     print('Отловлена ошибка, перезапускаю вебсокет...\n', e)
                     await asyncio.sleep(2, loop=self._loop)
