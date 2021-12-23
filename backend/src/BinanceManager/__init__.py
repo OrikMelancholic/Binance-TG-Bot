@@ -84,7 +84,9 @@ class BinanceManager:
         return data
 
     def getCurrency(self, flair=None, fromBinance=False):
-        if fromBinance:
+        if flair == 'USDT':
+            data = [{'symbol': flair, 'price': '1.0'}]
+        elif fromBinance:
             if flair:
                 raw_data = self.client.get_ticker(symbol=flair + 'USDT')
                 data = [{'symbol': raw_data['symbol'], 'price': raw_data['lastPrice']}]
