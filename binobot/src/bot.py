@@ -273,7 +273,7 @@ def show_currencies_list():
     elif selected_market_code == "AUD":
         markets = ["BNB", "BTC", "ETH", "XRP", "LUNA"]
     elif selected_market_code == "RUB":
-        markets = ["BNB", "BTC", "DOGE", "ETH", "USDT"]
+        markets = ["BNB", "BTC", "DOGE", "ETH", "LTC"]
     currency_buttons = []
 
     for currency_name in markets:
