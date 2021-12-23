@@ -43,9 +43,9 @@ class DatabaseManager:
     def _select(self, table, what='*', where=None):
         try:
             sql = 'SELECT %s FROM %s' % (what, table)
-            self.logger.log(sql)
             if where:
                 sql += ' WHERE %s' % where
+            self.logger.log(sql)
             cursor = self.connection.cursor()
             cursor.execute(sql)
             rows = cursor.fetchall()
@@ -117,7 +117,7 @@ class DatabaseManager:
         if flair:
             where += ['flair=\'%s\'' % flair]
         if active is not None:
-            where += ['active=%s' % active]
+            where += ['active=%s' % int(active)]
         where = ' AND '.join(where)
         rows = self._select(table, what, where)
         if tid and flair and rows:
