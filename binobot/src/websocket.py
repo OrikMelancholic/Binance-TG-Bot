@@ -16,7 +16,8 @@ class WebSocket(threading.Thread):
 
     def run(self):
         print("Запуск потока вебсокета...")
-        self._stop_event = asyncio.Event(loop=self._loop)
+        self._stop_event = asyncio.Event()
+
         try:
             self._loop.run_until_complete(self._stop_event.wait())
             self._loop.run_until_complete(self._clean())
@@ -50,12 +51,14 @@ class WebSocket(threading.Thread):
                         packet = json.loads(packet)
                         print('Получено от сервера: ', packet)
                         msg = 'Валюта %s прошла цель в %s$ с курсом %s$ (%s)' % (
-                            packet['flair'], packet['target'], packet['price'], 'рост' if packet['rising'] else 'падение'
+                            packet['flair'], packet['target'], packet['price'],
+                            'рост' if packet['rising'] else 'падение'
                         )
                         self.bot.send_message(chat_id=packet['user_id'], text=msg)
                 except Exception as e:
                     print('Отловлена ошибка, перезапускаю вебсокет...\n', e)
-                    await asyncio.sleep(2, loop=self._loop)
+                    await asyncio.sleep(2)
+
         finally:
             self._tasks.pop(self.url, None)
 

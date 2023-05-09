@@ -2,7 +2,7 @@ import logging
 
 from DatabaseManager import DatabaseManager as DBM
 from BinanceManager import BinanceManager as BinM
-from MainManager import MainManager as MainM
+from backend.src.MainManager import MainManager as MainM
 
 from tornado.ioloop import IOLoop
 

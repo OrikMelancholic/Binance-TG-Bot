@@ -1,25 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="RPi Node-A" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Binobot" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="RPi Node-A">
+      <paths name="Binobot">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="RPi Node-A (1)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/pi/icst/trkpo" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="pi@192.168.0.120:22">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/icst/trkpo" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -1,8 +1,9 @@
 import sqlite3
 import sys
+from os import mkdir
 sys.path.append('..')
 
-from Utilities import Logger
+from backend.src.Utilities import Logger
 
 
 class DatabaseManager:
@@ -33,7 +34,7 @@ class DatabaseManager:
 
     def __init__(self):
         try:
-            self.connection = sqlite3.connect('./DatabaseManager/backend.db')
+            self.connection = sqlite3.connect(r'C:\Users\PC-6\PycharmProjects\Binance-TG-Bot\backend\src\DatabaseManager\backend.db')
             self.logger = Logger('DBM')
             self._createTables()
         except sqlite3.Error as e:
@@ -78,10 +79,9 @@ class DatabaseManager:
     def getUser(self, tid=None):
         if tid:
             rows = self._select('Users', where='tid=%s' % tid)
-            rows = rows[0] if rows else rows
         else:
             rows = self._select('Users')
-        return rows
+        return rows or []
 
     def addUser(self, tid):
         self._insert('Users(tid)', (tid,))

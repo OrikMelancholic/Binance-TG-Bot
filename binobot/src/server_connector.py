@@ -1,10 +1,11 @@
-import matplotlib
+import matplotlib  # type: ignore
 import json
 import requests
-import pandas as pd
-import matplotlib.pyplot as plt
+import pandas as pd  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
 
 import sys
+
 sys.path.append('../..')
 
 from binobot.src.websocket import WebSocket
@@ -17,11 +18,12 @@ token = '03e2042c9fd8f6cdb946ddb123576736defff6ed1859cdce9ef6b34b008a97b9'
 
 class ServerConnector:
     def __init__(self, bot):
-        self.base_url = 'http://api.salieri.me/'
+        self.base_url = 'http://localhost:8000'
         self.bot = bot
-        self.ws = WebSocket('ws://api.salieri.me/push?token=%s' % token, self.bot)
+        self.ws = WebSocket('ws://localhost:8000/push?token=%s' % token, self.bot)
         self.ws.start()
         self.ws.connect()
+
 
     def get_smth(self, method, **params):
         url = '%s/%s' % (self.base_url, method)
@@ -37,8 +39,15 @@ class ServerConnector:
         df['median'] = (df['High'] + df['Low']) / 2
         df['Open time'] = df['Open time'].astype(dtype='datetime64[ms]')
         df.drop(['Ignore', 'Close time'], axis=1, inplace=True)
-        df.drop(['Open', 'Close', 'Volume first', 'Volume second', 'Number of trades', 'Buy volume first',
-                 'Buy volume second', 'Low', 'High'], axis=1, inplace=True)
+        df.drop(['Open',
+                 'Close',
+                 'Volume first',
+                 'Volume second',
+                 'Number of trades',
+                 'Buy volume first',
+                 'Buy volume second',
+                 'Low',
+                 'High'], axis=1, inplace=True)
         return df
 
     def get_currencies(self, flair, binance=False):
@@ -94,14 +103,8 @@ class ServerConnector:
 
     def add_subscription(self, user_id, currency, target=None):
         data = self.get_smth("/currencies/subscribe", tid=user_id, flair=currency, target=target, token=token)
-        if 'code' in data and data['code'] == 200:
-            return True
-        else:
-            return False
+        return 'code' in data and data['code'] == 200
 
     def remove_subscription(self, user_id, currency):
         data = self.get_smth("/currencies/unsubscribe", tid=user_id, flair=currency, token=token)
-        if 'code' in data and data['code'] == 200:
-            return True
-        else:
-            return False
+        return 'code' in data and data['code'] == 200

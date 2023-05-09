@@ -1,10 +1,13 @@
 import sys
+
+from backend.src.BinanceManager import BinanceManager
+
 sys.path.append('..')
 
-from BinanceManager import BinanceManager as BinM
-from Utilities import Logger
-import REST
-import WebSocket
+from backend.src.BinanceManager import BinanceManager as BinM
+from backend.src.Utilities import Logger
+import backend.src.REST
+import backend.src.WebSocket
 
 from tornado.web import Application
 from tornado.ioloop import IOLoop
@@ -17,16 +20,16 @@ class MainManager:
         self.binm = BinM(self.io_loop)
         params = {'binm': self.binm}
         self.urls = [
-            ("/", REST.LandingHandler),
-            ("/history/get", REST.HistoryGetHandler, params),
-            ("/currencies/get", REST.CurrenciesGetHandler, params),
-            ("/currencies/update", REST.CurrenciesUpdateHandler, params),
-            ("/currencies/subscribe", REST.CurrenciesSubscribeHandler, params),
-            ("/currencies/unsubscribe", REST.CurrenciesUnsubscribeHandler, params),
-            ("/rates/get", REST.RatesGetHandler, params),
-            ("/user/associate", REST.UserAssociateHandler, params),
-            ("/user/subscriptions", REST.UserSubscriptionsGetHandler, params),
-            ("/push", WebSocket.PushWebSockets, {'binm': self.binm, 'io_loop': self.io_loop}),
+            ("/", backend.src.REST.LandingHandler),
+            ("/history/get", backend.src.REST.HistoryGetHandler, params),
+            ("/currencies/get", backend.src.REST.CurrenciesGetHandler, params),
+            ("/currencies/update", backend.src.REST.CurrenciesUpdateHandler, params),
+            ("/currencies/subscribe", backend.src.REST.CurrenciesSubscribeHandler, params),
+            ("/currencies/unsubscribe", backend.src.REST.CurrenciesUnsubscribeHandler, params),
+            ("/rates/get", backend.src.REST.RatesGetHandler, params),
+            ("/user/associate", backend.src.REST.UserAssociateHandler, params),
+            ("/user/subscriptions", backend.src.REST.UserSubscriptionsGetHandler, params),
+            ("/push", backend.src.WebSocket.PushWebSockets, {'binm': self.binm, 'io_loop': self.io_loop}),
         ]
         self.application = Application(self.urls, debug=True)
         self.application.listen(8080)

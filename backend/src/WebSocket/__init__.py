@@ -4,9 +4,9 @@ sys.path.append('..')
 import tornado.gen
 import tornado.web
 from tornado.websocket import WebSocketHandler
-from Utilities import Logger
-from REST import response
-from REST import _trusted_token
+from backend.src.Utilities import Logger
+from backend.src.REST import response
+from backend.src.REST import _trusted_token
 
 _logger = Logger('Sock')
 

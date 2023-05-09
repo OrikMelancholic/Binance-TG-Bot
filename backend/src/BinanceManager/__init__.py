@@ -1,13 +1,14 @@
 import asyncio
 
-import tornado.concurrent
-from binance import Client
 import sys
 from datetime import timedelta
-sys.path.append('..')
 
-from Utilities import Logger
-from DatabaseManager import DatabaseManager as DBM
+import tornado.concurrent
+from binance.client import Client
+
+
+from backend.src.Utilities import Logger
+from backend.src.DatabaseManager import DatabaseManager as DBM
 
 
 class BinanceManager:
@@ -72,15 +73,26 @@ class BinanceManager:
 
         data = []
         keys = (
-            'Open time', 'Open', 'High', 'Low', 'Close', 'Volume first', 'Close time', 'Volume second',
-            'Number of trades', 'Buy volume first', 'Buy volume second', 'Ignore'
+            'Open time',
+            'Open',
+            'High',
+            'Low',
+            'Close',
+            'Volume first',
+            'Close time',
+            'Volume second',
+            'Number of trades',
+            'Buy volume first',
+            'Buy volume second',
+            'Ignore'
         )
         for kline in self.client.get_historical_klines_generator(symbol, interval, start, end):
             temp_dict = {}
             for _, key in enumerate(keys):
                 temp_dict[key] = kline[_]
             data.append(temp_dict)
-        self.logger.log('Requested %s history from Binance:\n%s' % (symbol, self.logger.fancy_json(data)))
+        self.logger.log('Requested %s history from Binance:\n%s'
+                        % (symbol, self.logger.fancy_json(data)))
 
         return data
 
@@ -93,7 +105,8 @@ class BinanceManager:
                 data = [{'symbol': raw_data['symbol'], 'price': raw_data['lastPrice']}]
             else:
                 data = self.client.get_all_tickers()
-            data = [{'symbol': _['symbol'].replace('USDT', ''), 'price': _['price']} for _ in data if _['symbol'].endswith('USDT')]
+            data = [{'symbol': _['symbol'].replace('USDT', ''),
+                     'price': _['price']} for _ in data if _['symbol'].endswith('USDT')]
             source = 'Binance'
         else:
             raw_data = self.dbm.getCurrency(flair)
@@ -102,7 +115,8 @@ class BinanceManager:
             data = [{'symbol': _[2], 'price': str(_[1])} for _ in raw_data]
             source = 'database'
 
-        self.logger.log('Requested all currencies from %s:\n%s' % (source, self.logger.fancy_json(data)))
+        self.logger.log('Requested all currencies from %s:\n%s'
+                        % (source, self.logger.fancy_json(data)))
         return data
 
     def updateCurrency(self, flair):
@@ -129,9 +143,9 @@ class BinanceManager:
                 raw_data = self.client.get_all_tickers()
                 data = []
                 for _ in raw_data:
-                    if flairFrom and not (_['symbol'].startswith(flairFrom)):
+                    if flairFrom and not _['symbol'].startswith(flairFrom):
                         continue
-                    if flairTo and not (_['symbol'].endswith(flairTo)):
+                    if flairTo and not _['symbol'].endswith(flairTo):
                         continue
                     data += [_]
         else:
@@ -149,7 +163,7 @@ class BinanceManager:
                     if symbol.startswith(_):
                         valFrom = dict_data[_]
                 if valTo and valFrom:
-                    data = [{'symbol': symbol, 'price': str(valFrom/valTo)}]
+                    data = [{'symbol': symbol, 'price': str(valFrom / valTo)}]
                 else:
                     data = []
             else:
@@ -162,7 +176,8 @@ class BinanceManager:
                             continue
                         if flairTo and (flairTo != _flairTo):
                             continue
-                        data += [{'symbol': _flairFrom + _flairTo, 'price': str(dict_data[_flairFrom]/dict_data[_flairTo])}]
+                        data += [{'symbol': _flairFrom + _flairTo,
+                                  'price': str(dict_data[_flairFrom] / dict_data[_flairTo])}]
 
         flairs = {'symbol': symbol, 'flairFrom': flairFrom, 'flairTo': flairTo}
         self.logger.log('Requested rates via %s:\n%s' % (flairs, self.logger.fancy_json(data)))
@@ -176,14 +191,16 @@ class BinanceManager:
         else:
             data_db = self.dbm.addCurrencySubscription(tid, flair, target)
 
-        self.logger.log('Requested to subscribe %s to %s:\n%s' % (tid, flair, self.logger.fancy_json(data_db)))
+        self.logger.log('Requested to subscribe %s to %s:\n%s'
+                        % (tid, flair, self.logger.fancy_json(data_db)))
         return {'success': bool(data_db)}
 
     def CurrencyUnsubscribe(self, tid, flair):
         data_db = self.dbm.getCurrencySubscription(tid, flair)
         if data_db:
             data_db = self.dbm.updateCurrencySubscription(tid, flair, active=0)
-            self.logger.log('Requested to unsubscribe %s to %s:\n%s' % (tid, flair, self.logger.fancy_json(data_db)))
+            self.logger.log('Requested to unsubscribe %s to %s:\n%s'
+                            % (tid, flair, self.logger.fancy_json(data_db)))
             return {'success': bool(data_db)}
         else:
             return {'success': False}
@@ -193,7 +210,8 @@ class BinanceManager:
         if not data_db:
             data_db = self.dbm.addUser(tid)
 
-        self.logger.log('Requested to associate Telegram user %s:\n%s' % (tid, self.logger.fancy_json(data_db)))
+        self.logger.log('Requested to associate Telegram user %s:\n%s'
+                        % (tid, self.logger.fancy_json(data_db)))
         return data_db
 
     def GetUserSubscriptions(self, tid):

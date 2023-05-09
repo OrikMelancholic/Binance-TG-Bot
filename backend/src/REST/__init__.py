@@ -2,7 +2,7 @@ import tornado.gen
 from tornado.web import RequestHandler
 from datetime import datetime, timedelta
 
-from Utilities import Logger
+from backend.src.Utilities import Logger
 
 _version = "0.1"
 _trusted_token = '03e2042c9fd8f6cdb946ddb123576736defff6ed1859cdce9ef6b34b008a97b9'
